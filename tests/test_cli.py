@@ -1,16 +1,20 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
 from datetime import date as Date
 
 import pydantic
-import ruamel.yaml
 import pytest
+import ruamel.yaml
 import typer.testing
 
 import rendercv.cli as cli
-import rendercv.data_models as dm
+import rendercv.cli.printer as printer
+import rendercv.cli.utilities as utilities
+import rendercv.data as data
+from rendercv import __version__
 
 
 def run_render_command(input_file_path, working_path, extra_arguments=[]):
@@ -27,37 +31,47 @@ def run_render_command(input_file_path, working_path, extra_arguments=[]):
 
 
 def test_welcome():
-    cli.welcome()
+    printer.welcome()
 
 
 def test_warning():
-    cli.warning("This is a warning message.")
+    printer.warning("This is a warning message.")
 
 
 def test_error():
     with pytest.raises(typer.Exit):
-        cli.error("This is an error message.")
+        printer.error("This is an error message.")
+
+
+def test_error_without_text():
+    with pytest.raises(typer.Exit):
+        printer.error()
+
+
+def test_error_without_text_with_exception():
+    with pytest.raises(typer.Exit):
+        printer.error(exception=ValueError("This is an error message."))
 
 
 def test_information():
-    cli.information("This is an information message.")
+    printer.information("This is an information message.")
 
 
 def test_get_error_message_and_location_and_value_from_a_custom_error():
     error_string = "('error message', 'location', 'value')"
-    result = cli.get_error_message_and_location_and_value_from_a_custom_error(
+    result = utilities.get_error_message_and_location_and_value_from_a_custom_error(
         error_string
     )
     assert result == ("error message", "location", "value")
 
     error_string = """("er'ror message", 'location', 'value')"""
-    result = cli.get_error_message_and_location_and_value_from_a_custom_error(
+    result = utilities.get_error_message_and_location_and_value_from_a_custom_error(
         error_string
     )
     assert result == ("er'ror message", "location", "value")
 
     error_string = "error message"
-    result = cli.get_error_message_and_location_and_value_from_a_custom_error(
+    result = utilities.get_error_message_and_location_and_value_from_a_custom_error(
         error_string
     )
     assert result == (None, None, None)
@@ -67,32 +81,32 @@ def test_get_error_message_and_location_and_value_from_a_custom_error():
     "data_model_class, invalid_model",
     [
         (
-            dm.EducationEntry,
+            data.EducationEntry,
             {
                 "area": "Mechanical Engineering",
                 "extra": "Extra",
             },
         ),
         (
-            dm.ExperienceEntry,
+            data.ExperienceEntry,
             {
                 "company": "CERN",
             },
         ),
         (
-            dm.ExperienceEntry,
+            data.ExperienceEntry,
             {
                 "position": "Researcher",
             },
         ),
         (
-            dm.ExperienceEntry,
+            data.ExperienceEntry,
             {
                 "position": Date(2020, 10, 1),
             },
         ),
         (
-            dm.ExperienceEntry,
+            data.ExperienceEntry,
             {
                 "company": "CERN",
                 "position": "Researcher",
@@ -101,25 +115,33 @@ def test_get_error_message_and_location_and_value_from_a_custom_error():
             },
         ),
         (
-            dm.PublicationEntry,
+            data.ExperienceEntry,
+            {
+                "company": "CERN",
+                "position": "Researcher",
+                "highlights": "This is not a list.",
+            },
+        ),
+        (
+            data.PublicationEntry,
             {
                 "doi": "10.1109/TASC.2023.3340648",
             },
         ),
         (
-            dm.ExperienceEntry,
+            data.ExperienceEntry,
             {
                 "authors": ["John Doe", "Jane Doe"],
             },
         ),
         (
-            dm.OneLineEntry,
+            data.OneLineEntry,
             {
                 "name": "My One Line Entry",
             },
         ),
         (
-            dm.CurriculumVitae,
+            data.CurriculumVitae,
             {
                 "name": "John Doe",
                 "sections": {
@@ -137,14 +159,23 @@ def test_get_error_message_and_location_and_value_from_a_custom_error():
                 },
             },
         ),
+        (
+            data.RenderCVDataModel,
+            {
+                "cv": {
+                    "name": "John Doe",
+                },
+                "design": {"theme": "UPPERCASE"},
+            },
+        ),
     ],
 )
-def test_handle_validation_error(data_model_class, invalid_model):
+def test_print_validation_errors(data_model_class, invalid_model):
     try:
         data_model_class(**invalid_model)
     except pydantic.ValidationError as e:
         with pytest.raises(typer.Exit):
-            cli.handle_validation_error(e)
+            printer.print_validation_errors(e)
 
 
 @pytest.mark.parametrize(
@@ -158,7 +189,7 @@ def test_handle_validation_error(data_model_class, invalid_model):
     ],
 )
 def test_handle_exceptions(exception):
-    @cli.handle_exceptions
+    @printer.handle_and_print_raised_exceptions
     def function_that_raises_exception():
         raise exception
 
@@ -167,7 +198,7 @@ def test_handle_exceptions(exception):
 
 
 def test_live_progress_reporter_class():
-    with cli.LiveProgressReporter(number_of_steps=3) as progress:
+    with printer.LiveProgressReporter(number_of_steps=3) as progress:
         progress.start_a_step("Test step 1")
         progress.finish_the_current_step()
 
@@ -180,33 +211,39 @@ def test_live_progress_reporter_class():
 
 @pytest.mark.parametrize(
     "folder_name",
-    ["markdown"] + dm.available_themes,
+    ["markdown"] + data.available_themes,
 )
 def test_copy_templates(tmp_path, folder_name):
-    copied_path = cli.copy_templates(
+    copied_path = utilities.copy_templates(
         folder_name=folder_name,
         copy_to=tmp_path,
     )
+    assert copied_path is not None
     assert copied_path.exists()
+
+    # make sure only j2.tex or j2.md files are copied:
+    for file in copied_path.iterdir():
+        assert file.suffix in [".tex", ".md"]
 
 
 def test_copy_templates_with_new_folder_name(tmp_path):
-    copied_path = cli.copy_templates(
+    copied_path = utilities.copy_templates(
         folder_name="markdown",
         copy_to=tmp_path,
         new_folder_name="new_folder",
     )
+    assert copied_path is not None
     assert copied_path.exists()
 
 
 @pytest.mark.parametrize(
     "folder_name",
-    ["markdown"] + dm.available_themes,
+    ["markdown"] + data.available_themes,
 )
 def test_copy_templates_destinations_exist(tmp_path, folder_name):
     (tmp_path / folder_name).mkdir()
 
-    copied_path = cli.copy_templates(
+    copied_path = utilities.copy_templates(
         folder_name=folder_name,
         copy_to=tmp_path,
     )
@@ -227,7 +264,35 @@ def test_render_command(tmp_path, input_file_path):
     pdf_file_path = output_folder_path / "John_Doe_CV.pdf"
     latex_file_path = output_folder_path / "John_Doe_CV.tex"
     markdown_file_path = output_folder_path / "John_Doe_CV.md"
-    html_file_path = output_folder_path / "John_Doe_CV_PASTETOGRAMMARLY.html"
+    html_file_path = output_folder_path / "John_Doe_CV.html"
+    png_file_path = output_folder_path / "John_Doe_CV_1.png"
+
+    assert output_folder_path.exists()
+    assert pdf_file_path.exists()
+    assert latex_file_path.exists()
+    assert markdown_file_path.exists()
+    assert html_file_path.exists()
+    assert png_file_path.exists()
+    assert "Your CV is rendered!" in result.stdout
+
+
+def test_render_command_with_relative_input_file_path(tmp_path, input_file_path):
+    new_folder = tmp_path / "another_folder"
+    new_folder.mkdir()
+    new_input_file_path = new_folder / input_file_path.name
+
+    shutil.copy(input_file_path, new_input_file_path)
+
+    os.chdir(tmp_path)
+    result = runner.invoke(
+        cli.app, ["render", str(new_input_file_path.relative_to(tmp_path))]
+    )
+
+    output_folder_path = tmp_path / "rendercv_output"
+    pdf_file_path = output_folder_path / "John_Doe_CV.pdf"
+    latex_file_path = output_folder_path / "John_Doe_CV.tex"
+    markdown_file_path = output_folder_path / "John_Doe_CV.md"
+    html_file_path = output_folder_path / "John_Doe_CV.html"
     png_file_path = output_folder_path / "John_Doe_CV_1.png"
 
     assert output_folder_path.exists()
@@ -269,7 +334,7 @@ def test_render_command_with_different_output_path(input_file_path, tmp_path):
 def test_render_command_with_different_output_path_for_each_file(
     option, file_name, tmp_path, input_file_path
 ):
-    result = run_render_command(
+    run_render_command(
         input_file_path,
         tmp_path,
         [
@@ -309,14 +374,14 @@ def test_render_command_with_custom_png_path_multiple_pages(tmp_path):
     ("option", "file_name"),
     [
         ("--dont-generate-markdown", "John_Doe_CV.md"),
-        ("--dont-generate-html", "John_Doe_CV_PASTETOGRAMMARLY.html"),
+        ("--dont-generate-html", "John_Doe_CV.html"),
         ("--dont-generate-png", "John_Doe_CV_1.png"),
     ],
 )
 def test_render_command_with_dont_generate_files(
     tmp_path, input_file_path, option, file_name
 ):
-    result = run_render_command(
+    run_render_command(
         input_file_path,
         tmp_path,
         [
@@ -370,11 +435,15 @@ def test_render_command_with_invalid_arguments(
 def test_new_command(tmp_path):
     # change the current working directory to the temporary directory:
     os.chdir(tmp_path)
-    runner.invoke(cli.app, ["new", "Jahn Doe"])
+    result = runner.invoke(cli.app, ["new", "Jahn Doe"])
 
     markdown_source_files_path = tmp_path / "markdown"
     theme_source_files_path = tmp_path / "classic"
     input_file_path = tmp_path / "Jahn_Doe_CV.yaml"
+
+    assert "Jahn_Doe_CV.yaml" in result.stdout
+    assert "markdown" in result.stdout
+    assert "classic" in result.stdout
 
     assert markdown_source_files_path.exists()
     assert theme_source_files_path.exists()
@@ -400,9 +469,11 @@ def test_new_command_with_invalid_theme(tmp_path):
 def test_new_command_with_dont_create_files(tmp_path, option, folder_name):
     # change the current working directory to the temporary directory:
     os.chdir(tmp_path)
-    runner.invoke(cli.app, ["new", "Jahn Doe", option])
+    result = runner.invoke(cli.app, ["new", "Jahn Doe", option])
 
     source_files_path = tmp_path / folder_name
+
+    assert folder_name not in result.stdout
 
     assert not source_files_path.exists()
 
@@ -453,17 +524,20 @@ def test_new_command_with_existing_files(tmp_path, file_or_folder_name):
 
 @pytest.mark.parametrize(
     "based_on",
-    dm.available_themes,
+    data.available_themes,
 )
 def test_create_theme_command(tmp_path, input_file_path, based_on):
     # change the current working directory to the temporary directory:
     os.chdir(tmp_path)
 
-    runner.invoke(cli.app, ["create-theme", "newtheme", "--based-on", based_on])
+    result = runner.invoke(
+        cli.app, ["create-theme", "newtheme", "--based-on", based_on]
+    )
 
     new_theme_source_files_path = tmp_path / "newtheme"
 
     assert new_theme_source_files_path.exists()
+    assert (new_theme_source_files_path / "__init__.py").exists()
 
     # test if the new theme is actually working:
     input_file_path = shutil.copy(input_file_path, tmp_path)
@@ -476,7 +550,7 @@ def test_create_theme_command(tmp_path, input_file_path, based_on):
     pdf_file_path = output_folder_path / "John_Doe_CV.pdf"
     latex_file_path = output_folder_path / "John_Doe_CV.tex"
     markdown_file_path = output_folder_path / "John_Doe_CV.md"
-    html_file_path = output_folder_path / "John_Doe_CV_PASTETOGRAMMARLY.html"
+    html_file_path = output_folder_path / "John_Doe_CV.html"
     png_file_path = output_folder_path / "John_Doe_CV_1.png"
 
     assert output_folder_path.exists()
@@ -509,3 +583,130 @@ def test_create_theme_command_theme_already_exists(tmp_path):
 
 def test_main_file():
     subprocess.run([sys.executable, "-m", "rendercv", "--help"], check=True)
+
+
+def test_get_latest_version_number_from_pypi():
+    version = utilities.get_latest_version_number_from_pypi()
+    assert isinstance(version, str)
+
+
+def test_if_welcome_prints_new_version_available(monkeypatch):
+    monkeypatch.setattr(
+        utilities, "get_latest_version_number_from_pypi", lambda: "99999"
+    )
+    import contextlib
+    import io
+
+    with contextlib.redirect_stdout(io.StringIO()) as f:
+        printer.welcome()
+        output = f.getvalue()
+
+    assert "A new version of RenderCV is available!" in output
+
+
+def test_rendercv_version_when_there_is_a_new_version(monkeypatch):
+    monkeypatch.setattr(
+        utilities, "get_latest_version_number_from_pypi", lambda: "99999"
+    )
+
+    result = runner.invoke(cli.app, ["--version"])
+
+    assert "A new version of RenderCV is available!" in result.stdout
+
+
+def test_rendercv_version_when_there_is_not_a_new_version(monkeypatch):
+    monkeypatch.setattr(
+        utilities, "get_latest_version_number_from_pypi", lambda: __version__
+    )
+
+    result = runner.invoke(cli.app, ["--version"])
+
+    assert __version__ in result.stdout
+
+
+def test_warn_if_new_version_is_available(monkeypatch):
+    monkeypatch.setattr(
+        utilities, "get_latest_version_number_from_pypi", lambda: __version__
+    )
+
+    assert not printer.warn_if_new_version_is_available()
+
+    monkeypatch.setattr(utilities, "get_latest_version_number_from_pypi", lambda: "999")
+
+    assert printer.warn_if_new_version_is_available()
+
+
+@pytest.mark.parametrize(
+    "key, value",
+    [
+        ("cv.phone", "+905555555555"),
+        ("cv.email", "test@example.com"),
+        ("cv.sections.education.0.degree", "PhD"),
+        ("cv.sections.education.0.highlights.0", "Did this."),
+        ("cv.sections.this_is_a_new_section", '["This is a text entry."]'),
+        ("design.page_size", "a4paper"),
+        ("design", '{"theme": "engineeringresumes"}'),
+    ],
+)
+def test_set_or_update_a_value(rendercv_data_model, key, value):
+    utilities.set_or_update_a_value(rendercv_data_model, key, value)
+
+    # replace with regex pattern:
+    key = re.sub(r"sections\.([^\.]*)", 'sections_input["\\1"]', key)
+    key = re.sub(r"\.(\d+)", "[\\1]", key)
+
+    if value.startswith("{") and value.endswith("}"):
+        value = eval(value)
+    elif value.startswith("[") and value.endswith("]"):
+        value = eval(value)
+
+    assert eval(f"rendercv_data_model.{key}") == value
+
+
+@pytest.mark.parametrize(
+    "key, value",
+    [
+        ("cv.phones", "+905555555555"),
+        ("cv.emssdsail", ""),
+        ("cv.sections.education.99.degree", "PhD"),
+        ("dessssign.page_size", "a4paper"),
+    ],
+)
+def test_set_or_update_a_value_invalid_keys(rendercv_data_model, key, value):
+    with pytest.raises((ValueError, KeyError, IndexError, AttributeError)):
+        utilities.set_or_update_a_value(rendercv_data_model, key, value)
+
+
+@pytest.mark.parametrize(
+    "key, value",
+    [
+        ("cv.phone", "+9999995555555555"),
+        ("cv.email", "notanemail***"),
+        ("cv.sections.education.0.highlights", "this is not a list"),
+        ("design.page_size", "invalid_page_size"),
+    ],
+)
+def test_set_or_update_a_value_invalid_values(rendercv_data_model, key, value):
+    with pytest.raises(pydantic.ValidationError):
+        utilities.set_or_update_a_value(rendercv_data_model, key, value)
+
+
+def test_relative_input_file_path_with_custom_output_paths(tmp_path, input_file_path):
+    new_folder = tmp_path / "another_folder"
+    new_folder.mkdir()
+    new_input_file_path = new_folder / input_file_path.name
+
+    shutil.copy(input_file_path, new_input_file_path)
+
+    os.chdir(tmp_path)
+    result = runner.invoke(
+        cli.app,
+        [
+            "render",
+            str(new_input_file_path.relative_to(tmp_path)),
+            "--pdf-path",
+            "test.pdf",
+        ],
+    )
+
+    assert (tmp_path / "test.pdf").exists()

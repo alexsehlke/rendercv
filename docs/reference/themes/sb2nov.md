@@ -1,7 +1,11 @@
-# Sb2nov Theme
+#  `rendercv.themes.sb2nov`
+
+::: rendercv.themes.sb2nov
+
+## Jinja Templates
 
 {% for template_name, template in theme_templates["sb2nov"].items() %}
-## {{ template_name }}
+### {{ template_name }}
 
 ```latex
 {{ template }}

@@ -17,9 +17,9 @@ locale_catalog:
   ...
 ```
 
-- The `cv` section is mandatory. It contains the **content of the CV**.
-- The `design` section is optional. It contains the **design options of the CV**. If you don't provide a `design` section, RenderCV will use the default design options with the `classic` theme.
-- The `locale_catalog` section is optional. You can provide translations for some of the strings used in the CV, for example, month abbreviations. RenderCV will use English strings if you don't provide a `locale_catalog` section.
+- The `cv` field is mandatory. It contains the **content of the CV**.
+- The `design` field is optional. It contains the **design options of the CV**. If you don't provide a `design` field, RenderCV will use the default design options with the `classic` theme.
+- The `locale_catalog` field is optional. You can provide translations for some of the strings used in the CV, for example, month abbreviations. RenderCV will use English strings if you don't provide a `locale_catalog` field.
 
 !!! tip
     To maximize your productivity while editing the input YAML file, set up RenderCV's JSON Schema in your IDE. It will validate your inputs on the fly and give auto-complete suggestions.
@@ -40,14 +40,13 @@ locale_catalog:
             ```
         3. Press `Ctrl + Space` to see the auto-complete suggestions.
 
-## "`cv`" section of the YAML input
+## "`cv`" field
 
-The `cv` section of the YAML input starts with generic information, as shown below.
+The `cv` field of the YAML input starts with generic information, as shown below.
 
 ```yaml
 cv:
   name: John Doe
-  label: Mechanical Engineer
   location: Your Location
   email: youremail@yourdomain.com
   phone: +905419999999
@@ -60,7 +59,7 @@ cv:
   ...
 ```
 
-1.  The available social networks are: {{available_social_networks}}. You can add more social networks by following the same pattern. The social network icons are automatically added to the header of the CV.
+1.  The available social networks are: {{available_social_networks}}.
 
 None of the values above are required. You can omit any or all of them, and RenderCV will adapt to your input. These generic fields are used in the header of the CV.
 
@@ -84,7 +83,9 @@ cv:
     ...
 ```
 
-The `sections` field is a dictionary where the keys are the section titles, and the values are lists. Each item of the list is an entry for that section.
+### "`cv.sections`" field
+
+The `cv.sections` field is a dictionary where the keys are the section titles, and the values are lists. Each item of the list is an entry for that section.
 
 Here is an example:
 
@@ -116,12 +117,12 @@ cv:
 
 There are seven different entry types in RenderCV. Different types of entries cannot be mixed under the same section, so for each section, you can only use one type of entry.
 
-The available entry types are: [`EducationEntry`](#education-entry), [`ExperienceEntry`](#experience-entry), [`PublicationEntry`](#publication-entry), [`NormalEntry`](#normal-entry), [`OneLineEntry`](#one-line-entry), [`BulletEntry`](#bullet-entry) and [`TextEntry`](#text-entry).
+The available entry types are: [`EducationEntry`](#education-entry), [`ExperienceEntry`](#experience-entry), [`PublicationEntry`](#publication-entry), [`NormalEntry`](#normal-entry), [`OneLineEntry`](#one-line-entry), [`BulletEntry`](#bullet-entry), and [`TextEntry`](#text-entry).
 
 Each entry type is a different object (a dictionary). Below, you can find all the entry types along with their optional/mandatory fields and how they appear in each built-in theme.
 
 {% for entry_name, entry in showcase_entries.items() %}
-### {{ entry_name }}
+#### {{ entry_name }}
 
 {% if entry_name == "Education Entry" %}
 
@@ -166,7 +167,9 @@ Each entry type is a different object (a dictionary). Below, you can find all th
 - `doi`: The DOI of the publication.
 - `journal`: The journal of the publication.
 - `date`: The date as a custom string or in `YYYY-MM-DD`, `YYYY-MM`, or `YYYY` format.
+
 {% elif entry_name == "Normal Entry" %}
+
 
 **Mandatory Fields:**
 
@@ -179,6 +182,7 @@ Each entry type is a different object (a dictionary). Below, you can find all th
 - `end_date`: The end date in `YYYY-MM-DD`, `YYYY-MM`, or `YYYY` format or "present".
 - `date`: The date as a custom string or in `YYYY-MM-DD`, `YYYY-MM`, or `YYYY` format. This will override `start_date` and `end_date`.
 - `highlights`: A list of bullet points.
+
 {% elif entry_name == "OneLineEntry" %}
 
 **Mandatory Fields:**
@@ -204,14 +208,14 @@ Each entry type is a different object (a dictionary). Below, you can find all th
 {{ entry["yaml"] }}
 ```
     {% for figure in entry["figures"] %}
-`{{ figure["theme"] }}` theme:
-![figure["alt_text"]]({{ figure["path"] }})
+=== "`{{ figure["theme"] }}` theme"
+    ![figure["alt_text"]]({{ figure["path"] }})
     {% endfor %}
 {% endfor %}
 
-## "`design`" section of the YAML input
+## "`design`" field
 
-The `cv` part of the input contains your content, and the `design` part contains your design options. The `design` part starts with a theme name. Currently, the available themes are: {{available_themes}}. However, custom themes can also be used (see [here](index.md#creating-custom-themes-with-the-create-theme-command).)
+The `cv` field of the input contains your content, and the `design` field contains your design options. The `design` field starts with a theme name. Currently, the available themes are: {{available_themes}}. However, custom themes can also be used (see [here](index.md#creating-custom-themes-with-the-create-theme-command).)
 
 ```yaml
 design:
@@ -221,7 +225,7 @@ design:
 
 Each theme may have different options for design. `classic`, `sb2nov`, and `engineeringresumes` almost use identical options, but `moderncv` is slightly different. Please use an IDE that supports JSON schema to avoid missing any available options for the theme (see [above](#structure-of-the-yaml-input-file)).
 
-An example `design` part for a `classic` theme is shown below:
+An example `design` field for a `classic` theme is shown below:
 
 ```yaml
 design:
@@ -263,9 +267,9 @@ design:
       vertical_between_name_and_connections: 0.3 cm
 ```
 
-## "`locale_catalog`" section of the YAML input
+## "`locale_catalog`" field
 
-This section is what makes RenderCV a multilingual tool. RenderCV uses some English strings to render PDFs. For example, it takes the dates in ISO format (`2020-01-01`) and converts them into human-friendly strings (`"Jan. 2020"`). However, you can override these strings for your own language or needs with the `locale_catalog` section.
+This field is what makes RenderCV a multilingual tool. RenderCV uses some English strings to render PDFs. For example, it takes the dates in ISO format (`2020-01-01`) and converts them into human-friendly strings (`"Jan 2020"`). However, you can override these strings for your own language or needs with the `locale_catalog` field.
 
 Here is an example:
 
@@ -284,6 +288,19 @@ locale_catalog:
     - Oct
     - Nov
     - Dec
+  full_names_of_months: # translation of the full month names
+    - January
+    - February
+    - March
+    - April
+    - May
+    - June
+    - July
+    - August
+    - September
+    - October
+    - November
+    - December
   month: month      # translation of the word "month"
   months: months    # translation of the word "months"
   year: year        # translation of the word "year"

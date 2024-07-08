@@ -3,13 +3,13 @@ from typing import Literal
 import pydantic
 import pydantic_extra_types.color as pydantic_color
 
-from .. import (
-    ThemeOptions,
+from rendercv.themes.common_models import (
     EntryAreaMargins,
-    HighlightsAreaMargins,
     HeaderMargins,
-    Margins,
+    HighlightsAreaMargins,
     LaTeXDimension,
+    Margins,
+    ThemeOptions,
 )
 
 
@@ -161,6 +161,22 @@ class EngineeringresumesThemeOptions(ThemeOptions):
         default="left-aligned",
         title="Text Alignment",
         description="The alignment of the text. The default value is left-aligned.",
+    )
+    seperator_between_connections: str = pydantic.Field(
+        default="$|$",
+        title="Seperator Between Connections",
+        description=(
+            "The separator between the connections in the header. The default value is"
+            " empty string."
+        ),
+    )
+    use_icons_for_connections: bool = pydantic.Field(
+        default=False,
+        title="Use Icons for Connections",
+        description=(
+            "If this option is set to true, then icons will be used for the connections"
+            " (like phone, email, and website). The default value is false."
+        ),
     )
     margins: MarginsForEngineeringresumes = pydantic.Field(
         default=MarginsForEngineeringresumes(),

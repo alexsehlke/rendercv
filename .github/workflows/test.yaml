@@ -25,10 +25,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install Hatch
+        uses: pypa/hatch@install
+
       - name: Lint with Ruff
         run: |
-          pip install .[dev]
-          ruff --output-format=github .
+          hatch run lint
         continue-on-error: true
 
   test:
@@ -50,14 +52,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      
+      - name: Install Hatch
+        uses: pypa/hatch@install
 
-      - name: Install dependencies
+      - name: Test
         run: |
-          pip install .[tests]
-
-      - name: Test with pytest
-        run: |
-          coverage run -m pytest tests/
+          hatch run test:coverage run -m pytest
           mv .coverage .coverage.${{ matrix.python-version }}.${{ matrix.os }}
 
       - name: Store coverage files
@@ -87,12 +88,14 @@ jobs:
           name: coverage
           path: coverage
 
+      - name: Install Hatch
+        uses: pypa/hatch@install
+
       - name: Combine coverage files
         run: |
-          pip install .[tests]
-          coverage combine coverage
-          coverage report
-          coverage html --show-contexts --title "RenderCV coverage for ${{ github.sha }}"
+          hatch run test:coverage combine coverage
+          hatch run test:coverage report
+          hatch run test:coverage html --show-contexts --title "RenderCV coverage for ${{ github.sha }}"
 
       - name: Upload the coverage report to smokeshow
         run: |

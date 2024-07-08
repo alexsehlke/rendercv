@@ -1,6 +1,6 @@
 # User Guide
 
-This document provides everything you need to know about the usage of RenderCV.
+This page provides everything you need to know about the usage of RenderCV.
 
 ## Installation
 
@@ -33,26 +33,9 @@ This command will create the following files:
 
 -   A directory called `markdown`.
 
-    This directory contains the Markdown source code of RenderCV's default Markdown template. You can update its contents to tweak the Markdown output of the CV.
+    This directory contains the Markdown source code of RenderCV's default Markdown template. You can update its contents to tweak the Markdown and HTML output of the CV.
 
-### Options of the `new` command
-
-The `new` command has some options:
-
-- `#!bash --theme "THEME_NAME"`: Generates files for a specific built-in theme, instead of the default `classic` theme. Currently, the available themes are: {{available_themes}}. 
-```bash
-rendercv new "Your Full Name" --theme "THEME_NAME" 
-```
-
-- `#!bash --dont-create-theme-source-files`: Prevents the creation of the theme source files. By default, the theme source files are created.
-```bash
-rendercv new "Your Full Name" --dont-create-theme-source-files
-```
-
-- `#!bash --dont-create-markdown-source-files`: Prevents the creation of the Markdown source files. By default, the Markdown source files are created.
-```bash
-rendercv new "Your Full Name" --dont-create-markdown-source-files
-```
+Please refer to the [here](cli.md#options-of-the-rendercv-new-command) for the complete list of CLI options available for the `new` command.
 
 ## Structure of the YAML input file
 
@@ -71,78 +54,14 @@ This command will generate a directory called `rendercv_output`, which contains 
 
 -   The CV in PDF format, `Your_Name_CV.pdf`.
 -   $\LaTeX$ source code of the PDF file, `Your_Name_CV.tex`.
--   PNG files for each page of the PDF file.
+-   Images of each page of the PDF file in PNG format, `Your_Name_CV_1.png`, `Your_Name_CV_page_2.png`, etc.
 -   The CV in Markdown format, `Your_Name_CV.md`.
--   An HTML file from the Markdown file, `Your_Name_CV_PASTETOGRAMMARLY.html`.
-    
-    This file is generated so that it can be opened in a browser and pasted into Grammarly or similar tools for spell and grammar checking.
-
+-   The CV in HTML format, `Your_Name_CV.html`.
 -   Some log and auxiliary files related to the $\LaTeX$ compilation process.
 
 If the theme and Markdown source files are found in the directory, they will override the default built-in theme and Markdown template. You don't need to provide all the source files; you can just provide the ones you want to override.
 
-### Options of the `render` command
-
-The `render` command has some options:
-
-- `#!bash --use-local-latex-command "LATEX_COMMAND"`: Generates the CV with the local $\LaTeX$ installation, i.e., runs `LATEX_COMMAND`. By default, RenderCV uses its own TinyTeX distribution.
-```bash
-rendercv render "Your_Name_CV.yaml" --use-local-latex-command "pdflatex" 
-```
-- `#!bash --output-folder-name "OUTPUT_FOLDER_NAME"`: Generates the output files in a folder with the given name. By default, the output folder name is `rendercv_output`. The output folder will be created in the current working directory.
-```bash
-rendercv render "Your_Name_CV.yaml" --output-folder-name "OUTPUT_FOLDER_NAME"
-```
-
-- `#!bash --latex-path LATEX_PATH`: Copies the generated $\LaTeX$ source code from the output folder and pastes it to the specified path.
-```bash
-rendercv render "Your_Name_CV.yaml" --latex-path "PATH"
-```
-
-- `#!bash --pdf-path PDF_PATH`: Copies the generated PDF file from the output folder and pastes it to the specified path.
-```bash
-rendercv render "Your_Name_CV.yaml" --pdf-path "PATH"
-```
-
-- `#!bash --markdown-path MARKDOWN_PATH`: Copies the generated Markdown file from the output folder and pastes it to the specified path.
-```bash
-rendercv render "Your_Name_CV.yaml" --markdown-path "PATH"
-```
-
-- `#!bash --html-path HTML_PATH`: Copies the generated HTML file from the output folder and pastes it to the specified path.
-```bash
-rendercv render "Your_Name_CV.yaml" --html-path "PATH"
-```
-
-- `#!bash --png-path PNG_PATH`: Copies the generated PNG files from the output folder and pastes them to the specified path.
-```bash
-rendercv render "Your_Name_CV.yaml" --png-path "PATH"
-```
-
-- `#!bash --dont-generate-markdown`: Prevents the generation of the Markdown file.
-```bash
-rendercv render "Your_Name_CV.yaml" --dont-generate-markdown
-```
-
-- `#!bash --dont-generate-html`: Prevents the generation of the HTML file.
-```bash
-rendercv render "Your_Name_CV.yaml" --dont-generate-html
-```
-
-- `#!bash --dont-generate-png`: Prevents the generation of the PNG files.
-```bash
-rendercv render "Your_Name_CV.yaml" --dont-generate-png
-```
-
-- `#!bash --ANY.LOCATION.IN.THE.YAML.FILE "VALUE"`: Overrides the value of `ANY.LOCATION.IN.THE.YAML.FILE` with `VALUE`. This option can be used to avoid storing sensitive information in the YAML file. Sensitive information, like phone numbers, can be passed as a command-line argument with environment variables. This method is also beneficial for creating multiple CVs using the same YAML file by changing only a few values. Here are a few examples:
-```bash
-rendercv render "Your_Name_CV.yaml" --cv.phone "+905555555555"
-```
-```bash
-rendercv render "Your_Name_CV.yaml" --cv.sections.education.1.institution "Your University"
-```
-
-    Multiple `#!bash --ANY.LOCATION.IN.THE.YAML.FILE "VALUE"` options can be used in the same command.
+Please refer to the [here](cli.md#options-of-the-rendercv-render-command) for the complete list of CLI options available for the `render` command.
 
 ## Creating custom themes with the `create-theme` command
 
@@ -176,10 +95,10 @@ Each of these `*.j2.tex` files is $\LaTeX$ code with some Python in it. These fi
 
 The best way to understand how they work is to look at the source code of built-in themes:
 
-- [`classic` templates](../reference/themes/classic.md)
-- [`engineeringresumes` templates](../reference/themes/engineeringresumes.md)
-- [`sb2nov` templates](../reference/themes/sb2nov.md)
-- [`moderncv` templates](../reference/themes/moderncv.md)
+- [templates of the `classic` theme](../reference/themes/classic.md)
+- [templates of the `engineeringresumes` theme](../reference/themes/engineeringresumes.md)
+- [templates of the `sb2nov` theme](../reference/themes/sb2nov.md)
+- [templates of the `moderncv` theme](../reference/themes/moderncv.md)
 
 For example, the content of `ExperienceEntry.j2.tex` for the `moderncv` theme is shown below:
 
@@ -233,41 +152,4 @@ Then, RenderCV will parse your custom design options from the YAML input, and yo
 ((* endif *))
 ```
 
-### Options of the `create-theme` command
-
-The `create-theme` command has some options:
-
-- `#!bash --based-on "THEME_NAME"`: Generates a custom theme based on the specified built-in theme, instead of the default `classic` theme. Currently, the available themes are: {{available_themes}}. 
-```bash
-rendercv create-theme "mycustomtheme" --based-on "THEME_NAME"
-```
-
-## Frequently Asked Questions (FAQ)
-
-### Can I use custom fonts?
-
-To be answered.
-
-### Can I add a background image?
-
-To be answered.
-
-### How good is it in terms of parseability by ATS?
-
-To be answered.
-
-### How to add links?
-
-To be answered.
-
-### How to use Greek letters?
-
-To be answered.
-
-### Can I add a profile picture?
-
-To be answered.
-
-### How can I switch the order of `company` and `position` in ExperienceEntry?
-
-To be answered.
+Please refer to the [here](cli.md#options-of-the-rendercv-create-theme-command) for the complete list of CLI options available for the `create-theme` command.

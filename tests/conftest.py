@@ -1,22 +1,22 @@
 """This module contains fixtures and other helpful functions for the tests."""
 
-import pathlib
 import copy
-import typing
-import itertools
 import filecmp
-from typing import Optional
+import itertools
 import os
+import pathlib
 import shutil
+import typing
+from typing import Optional, Type
 
-import pypdf
 import jinja2
-import pytest
 import pydantic
 import pydantic_extra_types.phone_numbers as pydantic_phone_numbers
+import pypdf
+import pytest
 
-from rendercv import data_models as dm
-import rendercv.renderer as r
+from rendercv import data
+from rendercv.renderer import templater
 
 # RenderCV is being tested by comparing the output to reference files. Therefore,
 # reference files should be updated when RenderCV is updated in a way that changes
@@ -132,15 +132,15 @@ def text_entry() -> str:
 
 
 @pytest.fixture
-def rendercv_data_model() -> dm.RenderCVDataModel:
+def rendercv_data_model() -> data.RenderCVDataModel:
     """Return a sample RenderCV data model."""
-    return dm.get_a_sample_data_model()
+    return data.create_a_sample_data_model()
 
 
 @pytest.fixture
-def rendercv_empty_curriculum_vitae_data_model() -> dm.CurriculumVitae:
+def rendercv_empty_curriculum_vitae_data_model() -> data.CurriculumVitae:
     """Return an empty CurriculumVitae data model."""
-    return dm.CurriculumVitae(sections={"test": ["test"]})
+    return data.CurriculumVitae(sections={"test": ["test"]})
 
 
 def return_a_value_for_a_field_type(
@@ -153,7 +153,7 @@ def return_a_value_for_a_field_type(
         ```python
         return_a_value_for_a_field_type("institution", str)
         ```
-        will return:
+        returns
         `#!python "Boğaziçi University"`
 
     Args:
@@ -193,13 +193,25 @@ def return_a_value_for_a_field_type(
         "name": "My Project",
         "label": "Pro**gram**ming",
         "details": "Python, C++, JavaScript, MATLAB",
-        "authors": ["J. Doe", "**H. Tom**", "S. Doe", "A. Andsurname"],
+        "authors": [
+            "J. Doe",
+            "***H. Tom***",
+            "S. Doe",
+            "A. Andsurname",
+            "S. Doe",
+            "A. Andsurname",
+            "S. Doe",
+            "A. Andsurname",
+            "S. Doe",
+            "A. Andsurname",
+        ],
         "title": (
             "Magneto-Thermal Thin Shell Approximation for 3D Finite Element Analysis of"
             " No-Insulation Coils"
         ),
         "journal": "IEEE Transactions on Applied Superconductivity",
         "doi": "10.1109/TASC.2023.3340648",
+        "url": "https://example.com",
     }
 
     field_type_dictionary = {
@@ -227,16 +239,16 @@ def return_a_value_for_a_field_type(
 
 
 def create_combinations_of_a_model(
-    model: pydantic.BaseModel,
-) -> list[pydantic.BaseModel]:
+    model: Type[data.Entry],
+) -> list[data.Entry]:
     """Look at the required fields and optional fields of a model and create all
     possible combinations of them.
 
     Args:
-        model (pydantic.BaseModel): The data model class to create combinations of.
+        model (Type[data.Entry]): The data model class to create combinations of.
 
     Returns:
-        list[pydantic.BaseModel]: All possible instances of the model.
+        list[data.Entry]: All possible instances of the model.
     """
     fields = typing.get_type_hints(model)
 
@@ -257,9 +269,9 @@ def create_combinations_of_a_model(
     for i in range(1, len(optional_fields) + 1):
         for combination in itertools.combinations(optional_fields, i):
             kwargs = {k: optional_fields[k] for k in combination}
-            model = copy.deepcopy(model_with_only_required_fields)
-            model.__dict__.update(kwargs)
-            all_combinations.append(model)
+            model_instance = copy.deepcopy(model_with_only_required_fields)
+            model_instance.__dict__.update(kwargs)
+            all_combinations.append(model_instance)
 
     return all_combinations
 
@@ -267,11 +279,11 @@ def create_combinations_of_a_model(
 @pytest.fixture
 def rendercv_filled_curriculum_vitae_data_model(
     text_entry, bullet_entry
-) -> dm.CurriculumVitae:
+) -> data.CurriculumVitae:
     """Return a filled CurriculumVitae data model, where each section has all possible
     combinations of entry types.
     """
-    return dm.CurriculumVitae(
+    return data.CurriculumVitae(
         name="John Doe",
         label="Mechanical Engineer",
         location="Istanbul, Turkey",
@@ -279,25 +291,27 @@ def rendercv_filled_curriculum_vitae_data_model(
         phone="+905419999999",  # type: ignore
         website="https://example.com",  # type: ignore
         social_networks=[
-            dm.SocialNetwork(network="LinkedIn", username="johndoe"),
-            dm.SocialNetwork(network="GitHub", username="johndoe"),
-            dm.SocialNetwork(network="Instagram", username="johndoe"),
-            dm.SocialNetwork(network="Orcid", username="0000-0000-0000-0000"),
-            dm.SocialNetwork(network="Mastodon", username="@johndoe@example"),
-            dm.SocialNetwork(network="Twitter", username="johndoe"),
-            dm.SocialNetwork(network="StackOverflow", username="12323/johndoe"),
-            dm.SocialNetwork(network="GitLab", username="johndoe"),
-            dm.SocialNetwork(network="ResearchGate", username="johndoe"),
-            dm.SocialNetwork(network="YouTube", username="@johndoe"),
+            data.SocialNetwork(network="LinkedIn", username="johndoe"),
+            data.SocialNetwork(network="GitHub", username="johndoe"),
+            data.SocialNetwork(network="Instagram", username="johndoe"),
+            data.SocialNetwork(network="ORCID", username="0000-0000-0000-0000"),
+            data.SocialNetwork(network="Google Scholar", username="F8IyYrQAAAAJ"),
+            data.SocialNetwork(network="Mastodon", username="@johndoe@example.com"),
+            data.SocialNetwork(network="StackOverflow", username="12323/johndoe"),
+            data.SocialNetwork(network="GitLab", username="johndoe"),
+            data.SocialNetwork(network="ResearchGate", username="johndoe"),
+            data.SocialNetwork(network="YouTube", username="johndoe"),
         ],
         sections={
             "Text Entries": [text_entry, text_entry, text_entry],
             "Bullet Entries": [bullet_entry, bullet_entry],
-            "Publication Entries": create_combinations_of_a_model(dm.PublicationEntry),
-            "Experience Entries": create_combinations_of_a_model(dm.ExperienceEntry),
-            "Education Entries": create_combinations_of_a_model(dm.EducationEntry),
-            "Normal Entries": create_combinations_of_a_model(dm.NormalEntry),
-            "One Line Entries": create_combinations_of_a_model(dm.OneLineEntry),
+            "Publication Entries": create_combinations_of_a_model(
+                data.PublicationEntry
+            ),
+            "Experience Entries": create_combinations_of_a_model(data.ExperienceEntry),
+            "Education Entries": create_combinations_of_a_model(data.EducationEntry),
+            "Normal Entries": create_combinations_of_a_model(data.NormalEntry),
+            "One Line Entries": create_combinations_of_a_model(data.OneLineEntry),
         },
     )
 
@@ -305,7 +319,7 @@ def rendercv_filled_curriculum_vitae_data_model(
 @pytest.fixture
 def jinja2_environment() -> jinja2.Environment:
     """Return a Jinja2 environment."""
-    return r.setup_jinja2_environment()
+    return templater.setup_jinja2_environment()
 
 
 @pytest.fixture
@@ -338,7 +352,7 @@ def specific_testdata_directory_path(testdata_directory_path, request) -> pathli
 
 def are_these_two_directories_the_same(
     directory1: pathlib.Path, directory2: pathlib.Path
-) -> None:
+) -> bool:
     """Check if two directories are the same.
 
     Args:
@@ -364,7 +378,7 @@ def are_these_two_directories_the_same(
     return True
 
 
-def are_these_two_files_the_same(file1: pathlib.Path, file2: pathlib.Path) -> None:
+def are_these_two_files_the_same(file1: pathlib.Path, file2: pathlib.Path) -> bool:
     """Check if two files are the same.
 
     Args:

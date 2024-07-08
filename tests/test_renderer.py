@@ -1,15 +1,15 @@
-import math
-import shutil
 import copy
-import pathlib
+import math
 import os
+import pathlib
+import shutil
 
-import pytest
 import jinja2
+import pytest
 import time_machine
 
-from rendercv import renderer as r
-from rendercv import data_models as dm
+from rendercv import data, renderer
+from rendercv.renderer import templater
 
 folder_name_dictionary = {
     "rendercv_empty_curriculum_vitae_data_model": "empty",
@@ -18,9 +18,9 @@ folder_name_dictionary = {
 
 
 def test_latex_file_class(tmp_path, rendercv_data_model, jinja2_environment):
-    latex_file = r.LaTeXFile(rendercv_data_model, jinja2_environment)
+    latex_file = templater.LaTeXFile(rendercv_data_model, jinja2_environment)
     latex_file.get_latex_code()
-    latex_file.generate_latex_file(tmp_path / "test.tex")
+    latex_file.render_a_latex_file(tmp_path / "test.tex")
 
 
 @pytest.mark.parametrize(
@@ -77,13 +77,13 @@ def test_latex_file_class(tmp_path, rendercv_data_model, jinja2_environment):
     ],
 )
 def test_latex_file_revert_nested_latex_style_commands_method(string, expected_string):
-    assert r.LaTeXFile.revert_nested_latex_style_commands(string) == expected_string
+    assert templater.revert_nested_latex_style_commands(string) == expected_string
 
 
 def test_markdown_file_class(tmp_path, rendercv_data_model, jinja2_environment):
-    latex_file = r.MarkdownFile(rendercv_data_model, jinja2_environment)
+    latex_file = templater.MarkdownFile(rendercv_data_model, jinja2_environment)
     latex_file.get_markdown_code()
-    latex_file.generate_markdown_file(tmp_path / "test.tex")
+    latex_file.render_a_markdown_file(tmp_path / "test.tex")
 
 
 @pytest.mark.parametrize(
@@ -97,25 +97,25 @@ def test_markdown_file_class(tmp_path, rendercv_data_model, jinja2_environment):
         ("##%%&&~~", "\\#\\#\\%\\%\\&\\&\\textasciitilde{}\\textasciitilde{}"),
         (
             (
-                "[link](you shouldn't escape whatever is in here & % # ~) [second"
+                "[link_test#](you shouldn't escape whatever is in here & % # ~) [second"
                 " link](https://myurl.com)"
             ),
             (
-                "[link](you shouldn't escape whatever is in here & % # ~) [second"
-                " link](https://myurl.com)"
+                "[link\\_test\\#](you shouldn't escape whatever is in here & % # ~)"
+                " [second link](https://myurl.com)"
             ),
         ),
         ("$a=5_4^3$", "$a=5_4^3$"),
     ],
 )
 def test_escape_latex_characters_not_strict(string, expected_string):
-    assert r.escape_latex_characters(string, strict=False) == expected_string
+    assert templater.escape_latex_characters(string, strict=False) == expected_string
 
 
 def test_escape_latex_characters_strict():
     string = "$a=5_4^3$"
     expected_string = "\\$a=5\\_4\\textasciicircum{}3\\$"
-    assert r.escape_latex_characters(string, strict=True) == expected_string
+    assert templater.escape_latex_characters(string, strict=True) == expected_string
 
 
 @pytest.mark.parametrize(
@@ -141,17 +141,17 @@ def test_escape_latex_characters_strict():
     ],
 )
 def test_markdown_to_latex(markdown_string, expected_latex_string):
-    assert r.markdown_to_latex(markdown_string) == expected_latex_string
+    assert templater.markdown_to_latex(markdown_string) == expected_latex_string
 
 
 def test_transform_markdown_sections_to_latex_sections(rendercv_data_model):
     new_data_model = copy.deepcopy(rendercv_data_model)
-    new_sections_input = r.transform_markdown_sections_to_latex_sections(
+    new_sections_input = templater.transform_markdown_sections_to_latex_sections(
         new_data_model.cv.sections_input
     )
     new_data_model.cv.sections_input = new_sections_input
 
-    assert isinstance(new_data_model, dm.RenderCVDataModel)
+    assert isinstance(new_data_model, data.RenderCVDataModel)
     assert new_data_model.cv.name == rendercv_data_model.cv.name
     assert new_data_model.design == rendercv_data_model.design
     assert new_data_model.cv.sections != rendercv_data_model.cv.sections
@@ -176,7 +176,7 @@ def test_transform_markdown_sections_to_latex_sections(rendercv_data_model):
     ],
 )
 def test_replace_placeholders_with_actual_values(string, placeholders, expected_string):
-    result = r.replace_placeholders_with_actual_values(string, placeholders)
+    result = templater.replace_placeholders_with_actual_values(string, placeholders)
     assert result == expected_string
 
 
@@ -191,7 +191,7 @@ def test_replace_placeholders_with_actual_values(string, placeholders, expected_
     ],
 )
 def test_make_matched_part_something(value, something, match_str, expected):
-    result = r.make_matched_part_something(value, something, match_str)
+    result = templater.make_matched_part_something(value, something, match_str)
     assert result == expected
 
 
@@ -206,7 +206,7 @@ def test_make_matched_part_something(value, something, match_str, expected):
     ],
 )
 def test_make_matched_part_bold(value, match_str, expected):
-    result = r.make_matched_part_bold(value, match_str)
+    result = templater.make_matched_part_bold(value, match_str)
     assert result == expected
 
 
@@ -221,7 +221,7 @@ def test_make_matched_part_bold(value, match_str, expected):
     ],
 )
 def test_make_matched_part_underlined(value, match_str, expected):
-    result = r.make_matched_part_underlined(value, match_str)
+    result = templater.make_matched_part_underlined(value, match_str)
     assert result == expected
 
 
@@ -236,7 +236,7 @@ def test_make_matched_part_underlined(value, match_str, expected):
     ],
 )
 def test_make_matched_part_italic(value, match_str, expected):
-    result = r.make_matched_part_italic(value, match_str)
+    result = templater.make_matched_part_italic(value, match_str)
     assert result == expected
 
 
@@ -251,7 +251,7 @@ def test_make_matched_part_italic(value, match_str, expected):
     ],
 )
 def test_make_matched_part_non_line_breakable(value, match_str, expected):
-    result = r.make_matched_part_non_line_breakable(value, match_str)
+    result = templater.make_matched_part_non_line_breakable(value, match_str)
     assert result == expected
 
 
@@ -266,7 +266,7 @@ def test_make_matched_part_non_line_breakable(value, match_str, expected):
     ],
 )
 def test_abbreviate_name(name, expected):
-    result = r.abbreviate_name(name)
+    result = templater.abbreviate_name(name)
     assert result == expected
 
 
@@ -284,7 +284,7 @@ def test_abbreviate_name(name, expected):
     ],
 )
 def test_divide_length_by(length, divider, expected):
-    result = r.divide_length_by(length, divider)
+    result = templater.divide_length_by(length, divider)
     assert math.isclose(
         float(result[:-2]), float(expected[:-2]), rel_tol=1e-2
     ), f"Expected {expected}, but got {result}"
@@ -296,35 +296,37 @@ def test_divide_length_by(length, divider, expected):
 )
 def test_invalid_divide_length_by(length, divider):
     with pytest.raises(ValueError):
-        r.divide_length_by(length, divider)
+        templater.divide_length_by(length, divider)
 
 
 def test_get_an_item_with_a_specific_attribute_value():
     entry_objects = [
-        dm.OneLineEntry(
+        data.OneLineEntry(
             label="Test1",
             details="Test2",
         ),
-        dm.OneLineEntry(
+        data.OneLineEntry(
             label="Test3",
             details="Test4",
         ),
     ]
-    result = r.get_an_item_with_a_specific_attribute_value(
+    result = templater.get_an_item_with_a_specific_attribute_value(
         entry_objects, "label", "Test3"
     )
     assert result == entry_objects[1]
-    result = r.get_an_item_with_a_specific_attribute_value(
+    result = templater.get_an_item_with_a_specific_attribute_value(
         entry_objects, "label", "DoesntExist"
     )
     assert result is None
 
     with pytest.raises(AttributeError):
-        r.get_an_item_with_a_specific_attribute_value(entry_objects, "invalid", "Test5")
+        templater.get_an_item_with_a_specific_attribute_value(
+            entry_objects, "invalid", "Test5"
+        )
 
 
 def test_setup_jinja2_environment():
-    env = r.setup_jinja2_environment()
+    env = templater.setup_jinja2_environment()
 
     # Check if the returned object is a jinja2.Environment instance
     assert isinstance(env, jinja2.Environment)
@@ -350,7 +352,7 @@ def test_setup_jinja2_environment():
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 @pytest.mark.parametrize(
     "curriculum_vitae_data_model",
@@ -360,14 +362,14 @@ def test_setup_jinja2_environment():
     ],
 )
 @time_machine.travel("2024-01-01")
-def test_generate_latex_file(
+def test_render_a_latex_file(
     run_a_function_and_check_if_output_is_the_same_as_reference,
     request: pytest.FixtureRequest,
     theme_name,
     curriculum_vitae_data_model,
 ):
     cv_data_model = request.getfixturevalue(curriculum_vitae_data_model)
-    data_model = dm.RenderCVDataModel(
+    data_model = data.RenderCVDataModel(
         cv=cv_data_model,
         design={"theme": theme_name},
     )
@@ -377,29 +379,29 @@ def test_generate_latex_file(
         f"{theme_name}_{folder_name_dictionary[curriculum_vitae_data_model]}.tex"
     )
 
-    def generate_latex_file(output_directory_path, reference_file_or_directory_path):
-        r.generate_latex_file(data_model, output_directory_path)
+    def render_a_latex_file(output_directory_path, reference_file_or_directory_path):
+        renderer.render_a_latex_file(data_model, output_directory_path)
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
-        generate_latex_file,
+        render_a_latex_file,
         reference_file_name,
         output_file_name,
     )
 
 
-def test_if_generate_latex_file_can_create_a_new_directory(
+def test_if_render_a_latex_file_can_create_a_new_directory(
     tmp_path, rendercv_data_model
 ):
     new_directory = tmp_path / "new_directory"
 
-    latex_file_path = r.generate_latex_file(rendercv_data_model, new_directory)
+    latex_file_path = renderer.render_a_latex_file(rendercv_data_model, new_directory)
 
     assert latex_file_path.exists()
 
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 @pytest.mark.parametrize(
     "curriculum_vitae_data_model",
@@ -409,14 +411,14 @@ def test_if_generate_latex_file_can_create_a_new_directory(
     ],
 )
 @time_machine.travel("2024-01-01")
-def test_generate_markdown_file(
+def test_render_a_markdown_file(
     run_a_function_and_check_if_output_is_the_same_as_reference,
     request: pytest.FixtureRequest,
     theme_name,
     curriculum_vitae_data_model,
 ):
     cv_data_model = request.getfixturevalue(curriculum_vitae_data_model)
-    data_model = dm.RenderCVDataModel(
+    data_model = data.RenderCVDataModel(
         cv=cv_data_model,
         design={"theme": theme_name},
     )
@@ -426,29 +428,31 @@ def test_generate_markdown_file(
         f"{theme_name}_{folder_name_dictionary[curriculum_vitae_data_model]}.md"
     )
 
-    def generate_markdown_file(output_directory_path, reference_file_or_directory_path):
-        r.generate_markdown_file(data_model, output_directory_path)
+    def render_a_markdown_file(output_directory_path, reference_file_or_directory_path):
+        renderer.render_a_markdown_file(data_model, output_directory_path)
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
-        generate_markdown_file,
+        render_a_markdown_file,
         reference_file_name,
         output_file_name,
     )
 
 
-def test_if_generate_markdown_file_can_create_a_new_directory(
+def test_if_render_a_markdown_file_can_create_a_new_directory(
     tmp_path, rendercv_data_model
 ):
     new_directory = tmp_path / "new_directory"
 
-    latex_file_path = r.generate_markdown_file(rendercv_data_model, new_directory)
+    latex_file_path = renderer.render_a_markdown_file(
+        rendercv_data_model, new_directory
+    )
 
     assert latex_file_path.exists()
 
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 def test_copy_theme_files_to_output_directory(
     run_a_function_and_check_if_output_is_the_same_as_reference, theme_name
@@ -458,7 +462,7 @@ def test_copy_theme_files_to_output_directory(
     def copy_theme_files_to_output_directory(
         output_directory_path, reference_file_or_directory_path
     ):
-        r.copy_theme_files_to_output_directory(theme_name, output_directory_path)
+        renderer.copy_theme_files_to_output_directory(theme_name, output_directory_path)
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
         copy_theme_files_to_output_directory,
@@ -481,7 +485,7 @@ def test_copy_theme_files_to_output_directory_custom_theme(
             dummytheme_path.mkdir(parents=True, exist_ok=True)
 
         # create a txt file called test.txt in the custom theme directory:
-        for entry_type_name in dm.entry_type_names:
+        for entry_type_name in data.available_entry_type_names:
             pathlib.Path(dummytheme_path / f"{entry_type_name}.j2.tex").touch()
 
         pathlib.Path(dummytheme_path / "Header.j2.tex").touch()
@@ -504,7 +508,7 @@ def test_copy_theme_files_to_output_directory_custom_theme(
 
         # create reference_directory_path:
         os.chdir(dummytheme_path.parent)
-        r.copy_theme_files_to_output_directory(
+        renderer.copy_theme_files_to_output_directory(
             theme_name=theme_name,
             output_directory_path=reference_directory_path,
         )
@@ -516,7 +520,7 @@ def test_copy_theme_files_to_output_directory_custom_theme(
 
         # copy the auxiliary theme files to tmp_path:
         os.chdir(dummytheme_path.parent)
-        r.copy_theme_files_to_output_directory(
+        renderer.copy_theme_files_to_output_directory(
             theme_name=theme_name,
             output_directory_path=output_directory_path,
         )
@@ -530,12 +534,14 @@ def test_copy_theme_files_to_output_directory_custom_theme(
 
 def test_copy_theme_files_to_output_directory_nonexistent_theme():
     with pytest.raises(FileNotFoundError):
-        r.copy_theme_files_to_output_directory("nonexistent_theme", pathlib.Path("."))
+        renderer.copy_theme_files_to_output_directory(
+            "nonexistent_theme", pathlib.Path(".")
+        )
 
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 @pytest.mark.parametrize(
     "curriculum_vitae_data_model",
@@ -545,7 +551,7 @@ def test_copy_theme_files_to_output_directory_nonexistent_theme():
     ],
 )
 @time_machine.travel("2024-01-01")
-def test_generate_latex_file_and_copy_theme_files(
+def test_render_a_latex_file_and_copy_theme_files(
     run_a_function_and_check_if_output_is_the_same_as_reference,
     request: pytest.FixtureRequest,
     theme_name,
@@ -555,25 +561,27 @@ def test_generate_latex_file_and_copy_theme_files(
         f"{theme_name}_{folder_name_dictionary[curriculum_vitae_data_model]}"
     )
 
-    data_model = dm.RenderCVDataModel(
+    data_model = data.RenderCVDataModel(
         cv=request.getfixturevalue(curriculum_vitae_data_model),
         design={"theme": theme_name},
     )
 
-    def generate_latex_file_and_copy_theme_files(
+    def render_a_latex_file_and_copy_theme_files(
         output_directory_path, reference_file_or_directory_path
     ):
-        r.generate_latex_file_and_copy_theme_files(data_model, output_directory_path)
+        renderer.render_a_latex_file_and_copy_theme_files(
+            data_model, output_directory_path
+        )
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
-        generate_latex_file_and_copy_theme_files,
+        render_a_latex_file_and_copy_theme_files,
         reference_directory_name,
     )
 
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 @pytest.mark.parametrize(
     "curriculum_vitae_data_model",
@@ -583,7 +591,7 @@ def test_generate_latex_file_and_copy_theme_files(
     ],
 )
 @time_machine.travel("2024-01-01")
-def test_latex_to_pdf(
+def test_render_a_pdf_from_latex(
     request: pytest.FixtureRequest,
     run_a_function_and_check_if_output_is_the_same_as_reference,
     theme_name,
@@ -601,7 +609,7 @@ def test_latex_to_pdf(
     def generate_pdf_file(output_directory_path, reference_file_or_directory_path):
         latex_sources_path = (
             reference_file_or_directory_path.parent.parent
-            / "test_generate_latex_file_and_copy_theme_files"
+            / "test_render_a_latex_file_and_copy_theme_files"
             / reference_name
         )
 
@@ -609,7 +617,7 @@ def test_latex_to_pdf(
         shutil.copytree(latex_sources_path, output_directory_path, dirs_exist_ok=True)
 
         # convert the latex code to a pdf
-        r.latex_to_pdf(output_directory_path / f"{name}_CV.tex")
+        renderer.render_a_pdf_from_latex(output_directory_path / f"{name}_CV.tex")
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
         function=generate_pdf_file,
@@ -618,15 +626,15 @@ def test_latex_to_pdf(
     )
 
 
-def test_latex_to_pdf_nonexistent_latex_file():
+def test_render_pdf_from_latex_nonexistent_latex_file():
     with pytest.raises(FileNotFoundError):
         file_path = pathlib.Path("file_doesnt_exist.tex")
-        r.latex_to_pdf(file_path)
+        renderer.render_a_pdf_from_latex(file_path)
 
 
 @pytest.mark.parametrize(
     "theme_name",
-    dm.available_themes,
+    data.available_themes,
 )
 @pytest.mark.parametrize(
     "curriculum_vitae_data_model",
@@ -636,7 +644,7 @@ def test_latex_to_pdf_nonexistent_latex_file():
     ],
 )
 @time_machine.travel("2024-01-01")
-def test_markdown_to_html(
+def test_render_an_html_from_markdown(
     run_a_function_and_check_if_output_is_the_same_as_reference,
     theme_name,
     curriculum_vitae_data_model,
@@ -644,15 +652,17 @@ def test_markdown_to_html(
     reference_name = (
         f"{theme_name}_{folder_name_dictionary[curriculum_vitae_data_model]}"
     )
-    output_file_name = f"{reference_name}_PASTETOGRAMMARLY.html"
+    output_file_name = f"{reference_name}.html"
     reference_file_name = f"{reference_name}.html"
 
-    def markdown_to_html(output_directory_path, reference_file_or_directory_path):
+    def render_html_from_markdown(
+        output_directory_path, reference_file_or_directory_path
+    ):
         markdown_file_name = f"{reference_name}.md"
 
         markdown_source_path = (
             reference_file_or_directory_path.parent.parent
-            / "test_generate_markdown_file"
+            / "test_render_a_markdown_file"
             / markdown_file_name
         )
 
@@ -660,22 +670,24 @@ def test_markdown_to_html(
         shutil.copy(markdown_source_path, output_directory_path)
 
         # convert markdown to html
-        r.markdown_to_html(output_directory_path / markdown_file_name)
+        renderer.render_an_html_from_markdown(
+            output_directory_path / markdown_file_name
+        )
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
-        function=markdown_to_html,
+        function=render_html_from_markdown,
         reference_file_or_directory_name=reference_file_name,
         output_file_name=output_file_name,
     )
 
 
-def test_markdown_to_html_nonexistent_markdown_file():
+def test_render_html_from_markdown_nonexistent_markdown_file():
     with pytest.raises(FileNotFoundError):
         file_path = pathlib.Path("file_doesnt_exist.md")
-        r.markdown_to_html(file_path)
+        renderer.render_an_html_from_markdown(file_path)
 
 
-def test_pdf_to_pngs_single_page(
+def test_render_pngs_from_pdf_single_page(
     run_a_function_and_check_if_output_is_the_same_as_reference,
 ):
     output_file_name = "classic_empty_1.png"
@@ -686,7 +698,7 @@ def test_pdf_to_pngs_single_page(
 
         pdf_path = (
             reference_file_or_directory_path.parent.parent
-            / "test_latex_to_pdf"
+            / "test_render_a_pdf_from_latex"
             / pdf_file_name
         )
 
@@ -694,7 +706,7 @@ def test_pdf_to_pngs_single_page(
         shutil.copy(pdf_path, output_directory_path)
 
         # convert pdf to pngs
-        r.pdf_to_pngs(output_directory_path / pdf_file_name)
+        renderer.render_pngs_from_pdf(output_directory_path / pdf_file_name)
 
     assert run_a_function_and_check_if_output_is_the_same_as_reference(
         generate_pngs,
@@ -703,7 +715,7 @@ def test_pdf_to_pngs_single_page(
     )
 
 
-def test_pdf_to_pngs(
+def test_render_pngs_from_pdf(
     run_a_function_and_check_if_output_is_the_same_as_reference,
 ):
     reference_directory_name = "pngs"
@@ -713,7 +725,7 @@ def test_pdf_to_pngs(
 
         pdf_path = (
             reference_file_or_directory_path.parent.parent
-            / "test_latex_to_pdf"
+            / "test_render_a_pdf_from_latex"
             / pdf_file_name
         )
 
@@ -721,7 +733,7 @@ def test_pdf_to_pngs(
         shutil.copy(pdf_path, output_directory_path)
 
         # convert pdf to pngs
-        r.pdf_to_pngs(output_directory_path / pdf_file_name)
+        renderer.render_pngs_from_pdf(output_directory_path / pdf_file_name)
 
         # remove the pdf file
         (output_directory_path / pdf_file_name).unlink()
@@ -732,7 +744,7 @@ def test_pdf_to_pngs(
     )
 
 
-def test_pdf_to_png_nonexistent_pdf_file():
+def test_render_pngs_from_pdf_nonexistent_pdf_file():
     with pytest.raises(FileNotFoundError):
         file_path = pathlib.Path("file_doesnt_exist.pdf")
-        r.pdf_to_pngs(file_path)
+        renderer.render_pngs_from_pdf(file_path)

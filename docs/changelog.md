@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-[Click here to see the unreleased changes.](https://github.com/sinaatalay/rendercv/compare/v1.10...HEAD)
+[Click here to see the unreleased changes.](https://github.com/sinaatalay/rendercv/compare/v1.11...HEAD)
 
 <!--
 ### Added
@@ -15,6 +15,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 ### Removed
 -->
+
+## [1.11] - 2024-06-19
+
+> **Full Changelog**: [v1.10...v1.11]
+
+### Added
+- CLI options now have short versions. See the [CLI documentation](https://docs.rendercv.com/user_guide/cli/) for more information.
+- CLI now notifies the user when a new version is available ([#89](https://github.com/sinaatalay/rendercv/issues/89)).
+- `Google Scholar` has been added as a social network type ([#85](https://github.com/sinaatalay/rendercv/issues/85)).
+- Two new design options have been added to the `classic`, `sb2nov`, and `engineeringresumes` themes: `seperator_between_connections` and `use_icons_for_connections`.
+
+### Changed
+- The punctuation of "ORCID" has been changed to uppercase, which was previously "Orcid" ([#90](https://github.com/sinaatalay/rendercv/issues/90)).
+- HTML output has been improved with better CSS ([#96](https://github.com/sinaatalay/rendercv/discussions/96)).
+- More complex section titles are now supported ([#106](https://github.com/sinaatalay/rendercv/issues/106)).
+- Month abbreviations are not using dots anymore.
+- Date ranges are now displayed as "Month Year - Month Year" instead of "Month Year to Month Year."
+- DOI validator in the `PublicationEntry` has been disabled.
+- `url` field has been added to the `PublicationEntry` as an alternative to the `doi` field ([#105](https://github.com/sinaatalay/rendercv/issues/105))
+- `YouTube` username should be given without `@` now.
+
+### Fixed
+- The error related to the `validation_error_cause` flag of Pydantic has been fixed ([#66](https://github.com/sinaatalay/rendercv/issues/66)).
+- `rendercv render` with relative input file paths has been fixed ([#95](https://github.com/sinaatalay/rendercv/issues/95)).
+
+### Removed
+- `Twitter` has been removed as a social network type ([#109](https://github.com/sinaatalay/rendercv/issues/109)).
+
 
 ## [1.10] - 2024-05-25
 
@@ -34,9 +62,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 > **Full Changelog**: [v1.8...v1.9]
 
 ### Added
-- RenderCV is now a multilingual tool. English strings can be overridden with `locale_catalog` section in the YAML input file ([#26](https://github.com/sinaatalay/rendercv/issues/26), [#20](https://github.com/sinaatalay/rendercv/pull/20)). See the [documentation](https://docs.rendercv.com/user_guide/structure_of_the_yaml_input_file/#locale_catalog-section-of-the-yaml-input) for more information.
+- RenderCV is now a multilingual tool. English strings can be overridden with `locale_catalog` section in the YAML input file ([#26](https://github.com/sinaatalay/rendercv/issues/26), [#20](https://github.com/sinaatalay/rendercv/pull/20)). See the [documentation](user_guide/structure_of_the_yaml_input_file.md#locale_catalog-field) for more information.
 - PNG files for each page can be generated now ([#57](https://github.com/sinaatalay/rendercv/issues/57)).
-- `rendercv new` command now generates Markdown and LaTeX source files in addition to the YAML input file so that the default templates can be modified easily.
+- `rendercv new` command now generates Markdown and $\LaTeX$ source files in addition to the YAML input file so that the default templates can be modified easily.
 - A new CLI command has been added, `rendercv create-theme`, to allow users to create their own themes easily.
     ```bash
     rendercv create-theme "customtheme" --based-on "classic"
@@ -64,7 +92,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - `ExperienceEntry` and `NormalEntry` without location and dates have been fixed in the `engineeringresumes`, `classic`, and `sb2nov` themes.
-- LaTeX templates have been polished.
+- $\LaTeX$ templates have been polished.
 - Bugs related to the special characters in email addresses have been fixed ([#64](https://github.com/sinaatalay/rendercv/issues/64)).
 
 ## [1.8] - 2024-04-16
@@ -176,7 +204,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Markdown `TextEntry`, where all the paragraphs were concatenated into a single paragraph, has been fixed.
 - Markdown `OneLineEntry`, where all the one-line entries were concatenated into a single line, has been fixed.
 - The `classic` theme's `PublicationEntry`, where blank parentheses were rendered when the `journal` field was not provided, has been fixed.
-- A bug, where an email with special characters caused a LaTeX error, has been fixed.
+- A bug, where an email with special characters caused a $\LaTeX$ error, has been fixed.
 - Unicode error, when `rendercv new` is called with a name with special characters, has been fixed.
 
 
@@ -290,6 +318,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 The first release of RenderCV.
 
+[v1.10...v1.11]: https://github.com/sinaatalay/rendercv/compare/v1.10...v1.11
 [v1.9...v1.10]: https://github.com/sinaatalay/rendercv/compare/v1.9...v1.10
 [v1.8...v1.9]: https://github.com/sinaatalay/rendercv/compare/v1.8...v1.9
 [v1.7...v1.8]: https://github.com/sinaatalay/rendercv/compare/v1.7...v1.8
@@ -310,6 +339,7 @@ The first release of RenderCV.
 [v0.2...v0.3]: https://github.com/sinaatalay/rendercv/compare/v0.2...v0.3
 [v0.1...v0.2]: https://github.com/sinaatalay/rendercv/compare/v0.1...v0.2
 
+[1.11]: https://github.com/sinaatalay/rendercv/releases/tag/v1.11
 [1.10]: https://github.com/sinaatalay/rendercv/releases/tag/v1.10
 [1.9]: https://github.com/sinaatalay/rendercv/releases/tag/v1.9
 [1.8]: https://github.com/sinaatalay/rendercv/releases/tag/v1.8
