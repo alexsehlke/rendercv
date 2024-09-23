@@ -89,7 +89,7 @@
         },
         "page_numbering_style": {
           "default": "NAME - Page PAGE_NUMBER of TOTAL_PAGES",
-          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
+          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\n- TODAY: Today's month and year (April 2024)\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
           "title": "Page Numbering Style",
           "type": "string"
         },
@@ -101,7 +101,7 @@
         },
         "last_updated_date_style": {
           "default": "Last updated in TODAY",
-          "description": "The style of the last updated date. The following placeholder can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
+          "description": "The style of the last updated date. The following placeholders can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
           "title": "Last Updated Date Style",
           "type": "string"
         },
@@ -136,11 +136,7 @@
           "type": "boolean"
         },
         "margins": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/MarginsForClassic"
-            }
-          ],
+          "$ref": "#/$defs/MarginsForClassic",
           "default": {
             "page": {
               "bottom": "2 cm",
@@ -174,7 +170,7 @@
         },
         "show_timespan_in": {
           "default": [],
-          "description": "The time span will be shown in the date and location column in these sections. The input should be a list of section titles as strings (case-sensitive). The default value is an empty list, which means the time span will not be shown in any section.",
+          "description": "The time span will be shown in the date and location column in these sections. The input should be a list of section titles as strings (case-sensitive). The default value is [] (no section will show the time span).",
           "items": {
             "type": "string"
           },
@@ -190,22 +186,12 @@
     },
     "CurriculumVitae": {
       "additionalProperties": false,
-      "description": "This class is the data model of the CV.",
+      "description": "This class is the data model of the `cv` field.",
       "properties": {
         "name": {
           "default": null,
           "description": "The name of the person.",
           "title": "Name",
-          "oneOf": [
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "label": {
-          "default": null,
-          "description": "The label of the person.",
-          "title": "Label",
           "oneOf": [
             {
               "type": "string"
@@ -235,7 +221,7 @@
         },
         "phone": {
           "default": null,
-          "description": "The phone number of the person.",
+          "description": "The phone number of the person, including the country code.",
           "title": "Phone",
           "oneOf": [
             {
@@ -316,7 +302,7 @@
     },
     "EducationEntry": {
       "additionalProperties": false,
-      "description": "This class is the data model of `EducationEntry`.",
+      "description": "This class is the data model of `EducationEntry`. `EducationEntry` class is\ncreated by combining the `EntryBase` and `EducationEntryBase` classes to have the\nfields in the correct order.",
       "properties": {
         "institution": {
           "description": "The institution name.",
@@ -514,7 +500,7 @@
         },
         "page_numbering_style": {
           "default": "NAME - Page PAGE_NUMBER of TOTAL_PAGES",
-          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
+          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\n- TODAY: Today's month and year (April 2024)\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
           "title": "Page Numbering Style",
           "type": "string"
         },
@@ -526,7 +512,7 @@
         },
         "last_updated_date_style": {
           "default": "Last updated in TODAY",
-          "description": "The style of the last updated date. The following placeholder can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
+          "description": "The style of the last updated date. The following placeholders can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
           "title": "Last Updated Date Style",
           "type": "string"
         },
@@ -561,11 +547,7 @@
           "type": "boolean"
         },
         "margins": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/MarginsForEngineeringresumes"
-            }
-          ],
+          "$ref": "#/$defs/MarginsForEngineeringresumes",
           "default": {
             "page": {
               "bottom": "2 cm",
@@ -604,6 +586,7 @@
       "type": "object"
     },
     "EntryAreaMargins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the entry area margins.",
       "properties": {
         "left_and_right": {
@@ -629,10 +612,10 @@
         }
       },
       "title": "EntryAreaMargins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "EntryAreaMarginsForClassic": {
+      "additionalProperties": false,
       "description": "This class is a data model for the entry area margins.",
       "properties": {
         "left_and_right": {
@@ -665,10 +648,10 @@
         }
       },
       "title": "EntryAreaMarginsForClassic",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "EntryAreaMarginsForEngineeringresumes": {
+      "additionalProperties": false,
       "description": "This class is a data model for the entry area margins.",
       "properties": {
         "left_and_right": {
@@ -694,12 +677,11 @@
         }
       },
       "title": "EntryAreaMarginsForEngineeringresumes",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "ExperienceEntry": {
       "additionalProperties": false,
-      "description": "This class is the data model of `ExperienceEntry`.",
+      "description": "This class is the data model of `ExperienceEntry`. `ExperienceEntry` class is\ncreated by combining the `EntryBase` and `ExperienceEntryBase` classes to have the\nfields in the correct order.",
       "properties": {
         "company": {
           "description": "The company name.",
@@ -809,6 +791,7 @@
       "type": "object"
     },
     "HeaderMargins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the header margins.",
       "properties": {
         "vertical_between_name_and_connections": {
@@ -834,10 +817,10 @@
         }
       },
       "title": "HeaderMargins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "HeaderMarginsForEngineeringresumes": {
+      "additionalProperties": false,
       "description": "This class is a data model for the header margins.",
       "properties": {
         "vertical_between_name_and_connections": {
@@ -863,10 +846,10 @@
         }
       },
       "title": "HeaderMarginsForEngineeringresumes",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "HighlightsAreaMargins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the highlights area margins.",
       "properties": {
         "top": {
@@ -892,10 +875,10 @@
         }
       },
       "title": "HighlightsAreaMargins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "HighlightsAreaMarginsForEngineeringresumes": {
+      "additionalProperties": false,
       "description": "This class is a data model for the highlights area margins.",
       "properties": {
         "top": {
@@ -921,13 +904,37 @@
         }
       },
       "title": "HighlightsAreaMarginsForEngineeringresumes",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "LocaleCatalog": {
       "additionalProperties": false,
       "description": "This class is the data model of the locale catalog. The values of each field\nupdates the `locale_catalog` dictionary.",
       "properties": {
+        "phone_number_format": {
+          "default": "national",
+          "description": "If 'national', phone numbers are formatted without the country code. If 'international', phone numbers are formatted with the country code. The default value is 'national'.",
+          "title": "Phone Number Format",
+          "oneOf": [
+            {
+              "enum": [
+                "national",
+                "international",
+                "E164"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "date_style": {
+          "default": "MONTH_ABBREVIATION YEAR",
+          "description": "The style of the date. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".",
+          "title": "Date Style",
+          "oneOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
         "month": {
           "default": "month",
           "description": "Translation of the word \"month\" in the locale.",
@@ -1015,20 +1022,45 @@
               "type": "array"
             }
           ]
+        },
+        "full_names_of_months": {
+          "default": [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+          ],
+          "description": "Full names of the months in the locale.",
+          "title": "Full Names of Months",
+          "oneOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 12,
+              "minItems": 12,
+              "type": "array"
+            }
+          ]
         }
       },
       "title": "LocaleCatalog",
       "type": "object"
     },
     "Margins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the margins.",
       "properties": {
         "page": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/PageMargins"
-            }
-          ],
+          "$ref": "#/$defs/PageMargins",
           "default": {
             "top": "2 cm",
             "bottom": "2 cm",
@@ -1039,11 +1071,7 @@
           "title": "Page Margins"
         },
         "section_title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/SectionTitleMargins"
-            }
-          ],
+          "$ref": "#/$defs/SectionTitleMargins",
           "default": {
             "top": "0.3 cm",
             "bottom": "0.2 cm"
@@ -1052,11 +1080,7 @@
           "title": "Section Title Margins"
         },
         "entry_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/EntryAreaMargins"
-            }
-          ],
+          "$ref": "#/$defs/EntryAreaMargins",
           "default": {
             "left_and_right": "0.2 cm",
             "vertical_between": "0.2 cm",
@@ -1066,11 +1090,7 @@
           "title": "Entry Area Margins"
         },
         "highlights_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HighlightsAreaMargins"
-            }
-          ],
+          "$ref": "#/$defs/HighlightsAreaMargins",
           "default": {
             "top": "0.10 cm",
             "left": "0.4 cm",
@@ -1080,11 +1100,7 @@
           "title": "Highlights Area Margins"
         },
         "header": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HeaderMargins"
-            }
-          ],
+          "$ref": "#/$defs/HeaderMargins",
           "default": {
             "vertical_between_name_and_connections": "0.3 cm",
             "bottom": "0.3 cm",
@@ -1095,18 +1111,14 @@
         }
       },
       "title": "Margins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "MarginsForClassic": {
+      "additionalProperties": false,
       "description": "This class is a data model for the margins.",
       "properties": {
         "page": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/PageMargins"
-            }
-          ],
+          "$ref": "#/$defs/PageMargins",
           "default": {
             "top": "2 cm",
             "bottom": "2 cm",
@@ -1117,11 +1129,7 @@
           "title": "Page Margins"
         },
         "section_title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/SectionTitleMargins"
-            }
-          ],
+          "$ref": "#/$defs/SectionTitleMargins",
           "default": {
             "top": "0.3 cm",
             "bottom": "0.2 cm"
@@ -1130,11 +1138,7 @@
           "title": "Section Title Margins"
         },
         "entry_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/EntryAreaMarginsForClassic"
-            }
-          ],
+          "$ref": "#/$defs/EntryAreaMarginsForClassic",
           "default": {
             "left_and_right": "0.2 cm",
             "vertical_between": "0.2 cm",
@@ -1145,11 +1149,7 @@
           "title": "Entry Area Margins"
         },
         "highlights_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HighlightsAreaMargins"
-            }
-          ],
+          "$ref": "#/$defs/HighlightsAreaMargins",
           "default": {
             "top": "0.10 cm",
             "left": "0.4 cm",
@@ -1159,11 +1159,7 @@
           "title": "Highlights Area Margins"
         },
         "header": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HeaderMargins"
-            }
-          ],
+          "$ref": "#/$defs/HeaderMargins",
           "default": {
             "vertical_between_name_and_connections": "0.3 cm",
             "bottom": "0.3 cm",
@@ -1174,18 +1170,14 @@
         }
       },
       "title": "MarginsForClassic",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "MarginsForEngineeringresumes": {
+      "additionalProperties": false,
       "description": "This class is a data model for the margins.",
       "properties": {
         "page": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/PageMargins"
-            }
-          ],
+          "$ref": "#/$defs/PageMargins",
           "default": {
             "top": "2 cm",
             "bottom": "2 cm",
@@ -1196,11 +1188,7 @@
           "title": "Page Margins"
         },
         "section_title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/SectionTitleMargins"
-            }
-          ],
+          "$ref": "#/$defs/SectionTitleMargins",
           "default": {
             "top": "0.3 cm",
             "bottom": "0.2 cm"
@@ -1209,11 +1197,7 @@
           "title": "Section Title Margins"
         },
         "entry_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/EntryAreaMarginsForEngineeringresumes"
-            }
-          ],
+          "$ref": "#/$defs/EntryAreaMarginsForEngineeringresumes",
           "default": {
             "left_and_right": "0 cm",
             "vertical_between": "0.2 cm",
@@ -1223,11 +1207,7 @@
           "title": "Entry Area Margins"
         },
         "highlights_area": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HighlightsAreaMarginsForEngineeringresumes"
-            }
-          ],
+          "$ref": "#/$defs/HighlightsAreaMarginsForEngineeringresumes",
           "default": {
             "top": "0.10 cm",
             "left": "0 cm",
@@ -1237,11 +1217,7 @@
           "title": "Highlights Area Margins"
         },
         "header": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/HeaderMarginsForEngineeringresumes"
-            }
-          ],
+          "$ref": "#/$defs/HeaderMarginsForEngineeringresumes",
           "default": {
             "vertical_between_name_and_connections": "5 pt",
             "bottom": "5 pt",
@@ -1252,8 +1228,7 @@
         }
       },
       "title": "MarginsForEngineeringresumes",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "ModerncvThemeOptions": {
       "additionalProperties": false,
@@ -1404,7 +1379,7 @@
     },
     "NormalEntry": {
       "additionalProperties": false,
-      "description": "This class is the data model of `NormalEntry`.",
+      "description": "This class is the data model of `NormalEntry`. `NormalEntry` class is created by\ncombining the `EntryBase` and `NormalEntryBase` classes to have the fields in the\ncorrect order.",
       "properties": {
         "name": {
           "description": "The name of the NormalEntry.",
@@ -1530,6 +1505,7 @@
       "type": "object"
     },
     "PageMargins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the page margins.",
       "properties": {
         "top": {
@@ -1562,12 +1538,11 @@
         }
       },
       "title": "PageMargins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "PublicationEntry": {
       "additionalProperties": false,
-      "description": "This class is the data model of `PublicationEntry`.",
+      "description": "This class is the data model of `PublicationEntry`. `PublicationEntry` class is\ncreated by combining the `EntryWithDate` and `PublicationEntryBase` classes to have\nthe fields in the correct order.",
       "properties": {
         "title": {
           "description": "The title of the publication.",
@@ -1591,6 +1566,7 @@
           "title": "DOI",
           "oneOf": [
             {
+              "pattern": "\\b10\\..*",
               "type": "string"
             }
           ]
@@ -1641,6 +1617,121 @@
         "authors"
       ],
       "title": "PublicationEntry",
+      "type": "object"
+    },
+    "RenderCVSettings": {
+      "additionalProperties": false,
+      "description": "This class is the data model of the RenderCV settings.",
+      "properties": {
+        "render_command": {
+          "default": null,
+          "description": "RenderCV's `render` command settings. They are the same as the command line arguments. CLI arguments have higher priority than the settings in the input file.",
+          "title": "Render Command Settings",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RenderCommandSettings"
+            }
+          ]
+        }
+      },
+      "title": "RenderCVSettings",
+      "type": "object"
+    },
+    "RenderCommandSettings": {
+      "additionalProperties": false,
+      "description": "This class is the data model of the `render` command's settings.",
+      "properties": {
+        "output_folder_name": {
+          "default": "rendercv_output",
+          "description": "The name of the folder where the output files will be saved. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is \"rendercv_output\".",
+          "title": "Output Folder Name",
+          "type": "string"
+        },
+        "use_local_latex_command": {
+          "default": null,
+          "description": "The command to compile the LaTeX file to a PDF file. The default value is \"pdflatex\".",
+          "title": "Local LaTeX Command",
+          "oneOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "pdf_path": {
+          "default": null,
+          "description": "The path of the PDF file. If it is not provided, the PDF file will not be generated. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is null.",
+          "title": "PDF Path",
+          "oneOf": [
+            {
+              "format": "path",
+              "type": "string"
+            }
+          ]
+        },
+        "latex_path": {
+          "default": null,
+          "description": "The path of the LaTeX file. If it is not provided, the LaTeX file will not be generated. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is null.",
+          "title": "LaTeX Path",
+          "oneOf": [
+            {
+              "format": "path",
+              "type": "string"
+            }
+          ]
+        },
+        "html_path": {
+          "default": null,
+          "description": "The path of the HTML file. If it is not provided, the HTML file will not be generated. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is null.",
+          "title": "HTML Path",
+          "oneOf": [
+            {
+              "format": "path",
+              "type": "string"
+            }
+          ]
+        },
+        "png_path": {
+          "default": null,
+          "description": "The path of the PNG file. If it is not provided, the PNG file will not be generated. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is null.",
+          "title": "PNG Path",
+          "oneOf": [
+            {
+              "format": "path",
+              "type": "string"
+            }
+          ]
+        },
+        "markdown_path": {
+          "default": null,
+          "description": "The path of the Markdown file. If it is not provided, the Markdown file will not be generated. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is null.",
+          "title": "Markdown Path",
+          "oneOf": [
+            {
+              "format": "path",
+              "type": "string"
+            }
+          ]
+        },
+        "dont_generate_html": {
+          "default": false,
+          "description": "A boolean value to determine whether the HTML file will be generated. The default value is False.",
+          "title": "Generate HTML Flag",
+          "type": "boolean"
+        },
+        "dont_generate_markdown": {
+          "default": false,
+          "description": "A boolean value to determine whether the Markdown file will be generated. The default value is False.",
+          "title": "Generate Markdown Flag",
+          "type": "boolean"
+        },
+        "dont_generate_png": {
+          "default": false,
+          "description": "A boolean value to determine whether the PNG file will be generated. The default value is False.",
+          "title": "Generate PNG Flag",
+          "type": "boolean"
+        }
+      },
+      "title": "RenderCommandSettings",
       "type": "object"
     },
     "Sb2novThemeOptions": {
@@ -1716,7 +1807,7 @@
         },
         "page_numbering_style": {
           "default": "NAME - Page PAGE_NUMBER of TOTAL_PAGES",
-          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
+          "description": "The style of the page numbering. The following placeholders can be used:\n- NAME: The name of the person\n- PAGE_NUMBER: The current page number\n- TOTAL_PAGES: The total number of pages\n- TODAY: Today's month and year (April 2024)\nThe default value is NAME - Page PAGE_NUMBER of TOTAL_PAGES.",
           "title": "Page Numbering Style",
           "type": "string"
         },
@@ -1728,7 +1819,7 @@
         },
         "last_updated_date_style": {
           "default": "Last updated in TODAY",
-          "description": "The style of the last updated date. The following placeholder can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
+          "description": "The style of the last updated date. The following placeholders can be used:\n- TODAY: Today's month and year (April 2024)\nThe default value is Last updated in TODAY.",
           "title": "Last Updated Date Style",
           "type": "string"
         },
@@ -1763,11 +1854,7 @@
           "type": "boolean"
         },
         "margins": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/Margins"
-            }
-          ],
+          "$ref": "#/$defs/Margins",
           "default": {
             "page": {
               "bottom": "2 cm",
@@ -1795,8 +1882,7 @@
               "vertical_between_name_and_connections": "0.3 cm"
             }
           },
-          "description": "Page, section title, entry field, and highlights field margins.",
-          "title": "Margins"
+          "description": "Page, section title, entry field, and highlights field margins."
         }
       },
       "required": [
@@ -1806,6 +1892,7 @@
       "type": "object"
     },
     "SectionTitleMargins": {
+      "additionalProperties": false,
       "description": "This class is a data model for the section title margins.",
       "properties": {
         "top": {
@@ -1824,8 +1911,7 @@
         }
       },
       "title": "SectionTitleMargins",
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "SocialNetwork": {
       "additionalProperties": false,
@@ -1866,11 +1952,7 @@
   "description": "RenderCV data model.",
   "properties": {
     "cv": {
-      "allOf": [
-        {
-          "$ref": "#/$defs/CurriculumVitae"
-        }
-      ],
+      "$ref": "#/$defs/CurriculumVitae",
       "description": "The data of the CV.",
       "title": "Curriculum Vitae"
     },
@@ -1958,6 +2040,19 @@
       "default": null,
       "description": "The locale catalog of the CV to allow the support of multiple languages.",
       "title": "Locale Catalog"
+    },
+    "rendercv_settings": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RenderCVSettings"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The settings of the RenderCV.",
+      "title": "RenderCV Settings"
     }
   },
   "required": [

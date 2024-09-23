@@ -3,48 +3,66 @@ The `rendercv.models.locale_catalog` module contains the data model of the
 `locale_catalog` field of the input file.
 """
 
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 import annotated_types as at
 import pydantic
 
-from .base import RenderCVBaseModel
+from .base import RenderCVBaseModelWithoutExtraKeys
 
 
-class LocaleCatalog(RenderCVBaseModel):
+class LocaleCatalog(RenderCVBaseModelWithoutExtraKeys):
     """This class is the data model of the locale catalog. The values of each field
     updates the `locale_catalog` dictionary.
     """
 
+    phone_number_format: Optional[Literal["national", "international", "E164"]] = (
+        pydantic.Field(
+            default="national",
+            title="Phone Number Format",
+            description=(
+                "If 'national', phone numbers are formatted without the country code."
+                " If 'international', phone numbers are formatted with the country"
+                " code. The default value is 'national'."
+            ),
+        )
+    )
+    date_style: Optional[str] = pydantic.Field(
+        default="MONTH_ABBREVIATION YEAR",
+        title="Date Style",
+        description=(
+            "The style of the date. The following placeholders can be used:\n-"
+            " FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION:"
+            " Abbreviation of the month\n- MONTH: Month as a number\n-"
+            " MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a"
+            " number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default"
+            ' value is "MONTH_ABBREVIATION YEAR".'
+        ),
+    )
     month: Optional[str] = pydantic.Field(
         default="month",
         title='Translation of "Month"',
         description='Translation of the word "month" in the locale.',
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     months: Optional[str] = pydantic.Field(
         default="months",
         title='Translation of "Months"',
         description='Translation of the word "months" in the locale.',
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     year: Optional[str] = pydantic.Field(
         default="year",
         title='Translation of "Year"',
         description='Translation of the word "year" in the locale.',
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     years: Optional[str] = pydantic.Field(
         default="years",
         title='Translation of "Years"',
         description='Translation of the word "years" in the locale.',
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     present: Optional[str] = pydantic.Field(
         default="present",
         title='Translation of "Present"',
         description='Translation of the word "present" in the locale.',
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     to: Optional[str] = pydantic.Field(
         default="–",  # en dash
@@ -53,7 +71,6 @@ class LocaleCatalog(RenderCVBaseModel):
             "The word or character used to indicate a range in the locale (e.g.,"
             ' "2020 - 2021").'
         ),
-        validate_default=True,  # To initialize the locale catalog with the default values
     )
     abbreviations_for_months: Optional[
         Annotated[list[str], at.Len(min_length=12, max_length=12)]
@@ -76,7 +93,6 @@ class LocaleCatalog(RenderCVBaseModel):
         ],
         title="Abbreviations of Months",
         description="Abbreviations of the months in the locale.",
-        validate_default=True,  # to initialize the locale catalog with the default values
     )
     full_names_of_months: Optional[
         Annotated[list[str], at.Len(min_length=12, max_length=12)]
@@ -97,7 +113,6 @@ class LocaleCatalog(RenderCVBaseModel):
         ],
         title="Full Names of Months",
         description="Full names of the months in the locale.",
-        validate_default=True,  # to initialize the locale catalog with the default values
     )
 
     @pydantic.field_validator(
@@ -109,10 +124,12 @@ class LocaleCatalog(RenderCVBaseModel):
         "abbreviations_for_months",
         "to",
         "full_names_of_months",
+        "phone_number_format",
+        "date_style",
     )
     @classmethod
-    def update_translations(cls, value: str, info: pydantic.ValidationInfo) -> str:
-        """Update the `locale_catalog` dictionary with the provided translations."""
+    def update_locale_catalog(cls, value: str, info: pydantic.ValidationInfo) -> str:
+        """Update the `locale_catalog` dictionary."""
         if value:
             locale_catalog[info.field_name] = value  # type: ignore
 
@@ -121,5 +138,8 @@ class LocaleCatalog(RenderCVBaseModel):
 
 # The dictionary below will be overwritten by LocaleCatalog class, which will contain
 # month names, month abbreviations, and other locale-specific strings.
-locale_catalog: dict[str, str | list[str]] = {}
-LocaleCatalog()  # Initialize the locale catalog with the default values
+locale_catalog: dict[str, str | list[str]] = dict()
+
+# Initialize even if the RenderCVDataModel is not called (to make `format_date` function
+# work on its own):
+LocaleCatalog()

@@ -144,6 +144,7 @@ def welcome():
     table.add_column("Title", style="magenta", justify="left")
     table.add_column("Link", style="cyan", justify="right", no_wrap=True)
 
+    table.add_row("[bold]RenderCV App", "https://rendercv.com")
     table.add_row("Documentation", "https://docs.rendercv.com")
     table.add_row("Source code", "https://github.com/sinaatalay/rendercv/")
     table.add_row("Bug reports", "https://github.com/sinaatalay/rendercv/issues/")
@@ -225,6 +226,10 @@ def print_validation_errors(exception: pydantic.ValidationError):
         "String should match pattern '\\d{4}-\\d{2}(-\\d{2})?'": (
             "This is not a valid date! Please use either YYYY-MM-DD, YYYY-MM, or YYYY"
             " format!"
+        ),
+        "String should match pattern '\\b10\\..*'": (
+            'A DOI prefix should always start with "10.". For example,'
+            ' "10.1109/TASC.2023.3340648".'
         ),
         "URL scheme should be 'http' or 'https'": "This is not a valid URL!",
         "Field required": "This field is required!",
@@ -379,6 +384,7 @@ def handle_and_print_raised_exceptions(function: Callable) -> Callable:
 
     Args:
         function (Callable): The function to be wrapped.
+
     Returns:
         Callable: The wrapped function.
     """
@@ -421,5 +427,7 @@ def handle_and_print_raised_exceptions(function: Callable) -> Callable:
             )
         except RuntimeError as e:
             error(exception=e)
+        except Exception as e:
+            raise e
 
     return wrapper

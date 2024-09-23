@@ -8,13 +8,14 @@ from typing import Optional
 import pydantic
 
 from ...themes import ClassicThemeOptions
-from .base import RenderCVBaseModel
+from .base import RenderCVBaseModelWithoutExtraKeys
 from .curriculum_vitae import CurriculumVitae
 from .design import RenderCVDesign
 from .locale_catalog import LocaleCatalog
+from .rendercv_settings import RenderCVSettings
 
 
-class RenderCVDataModel(RenderCVBaseModel):
+class RenderCVDataModel(RenderCVBaseModelWithoutExtraKeys):
     """This class binds both the CV and the design information together."""
 
     cv: CurriculumVitae = pydantic.Field(
@@ -34,12 +35,18 @@ class RenderCVDataModel(RenderCVBaseModel):
         description=(
             "The locale catalog of the CV to allow the support of multiple languages."
         ),
-        validate_default=True,
+    )
+    rendercv_settings: Optional[RenderCVSettings] = pydantic.Field(
+        default=None,
+        title="RenderCV Settings",
+        description="The settings of the RenderCV.",
     )
 
     @pydantic.field_validator("locale_catalog")
     @classmethod
-    def initialize_locale_catalog(cls, locale_catalog: LocaleCatalog) -> LocaleCatalog:
+    def initialize_locale_catalog(
+        cls, locale_catalog: Optional[LocaleCatalog]
+    ) -> Optional[LocaleCatalog]:
         """Even if the locale catalog is not provided, initialize it with the default
         values."""
         if locale_catalog is None:

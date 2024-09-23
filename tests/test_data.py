@@ -76,6 +76,7 @@ def test_read_input_file(input_file_path):
         input_dictionary = {
             "cv": {
                 "name": "John Doe",
+                "sections": {"test_section": ["this is a text entry."]},
             },
             "design": {
                 "theme": "classic",
@@ -300,6 +301,10 @@ def test_dates(
     assert entry_base.time_span_string == expected_time_span
 
 
+def test_dates_style():
+    assert "TEST" == data.format_date(Date(2020, 1, 1), "TEST")
+
+
 @pytest.mark.parametrize(
     "date, expected_date_string",
     [
@@ -460,6 +465,29 @@ def test_get_entry_type_name_and_section_validator(
         )
         assert entry_type == expected_entry_type
         assert section_type.__name__ == expected_section_type
+
+
+@pytest.mark.parametrize(
+    "EntryType",
+    data.available_entry_models,
+)
+def test_entries_with_extra_attributes(EntryType, request: pytest.FixtureRequest):
+    # Get the name of the class:
+    entry_type_name: str = EntryType.__name__
+
+    # Convert from camel case to snake case
+    entry_type_name = "".join(
+        ["_" + c.lower() if c.isupper() else c for c in entry_type_name]
+    ).lstrip("_")
+
+    # Get entry contents from fixture:
+    entry_contents = request.getfixturevalue(entry_type_name)
+
+    entry_contents["extra_attribute"] = "extra value"
+
+    entry = EntryType(**entry_contents)
+
+    assert entry.extra_attribute == "extra value"
 
 
 def test_sections(
@@ -674,6 +702,7 @@ def test_locale_catalog():
             "11",
             "12",
         ],
+        phone_number_format="international",
     )
 
     assert locale_catalog.locale_catalog == data_model.locale_catalog.model_dump()
@@ -691,6 +720,22 @@ def test_if_local_catalog_resets():
     data_model = data.create_a_sample_data_model("John Doe")
 
     assert locale_catalog.locale_catalog["month"] == "month"
+
+
+def test_curriculum_vitae():
+    data.CurriculumVitae(name="Test Doe")
+
+    assert curriculum_vitae.curriculum_vitae == {"name": "Test Doe"}
+
+
+def test_if_curriculum_vitae_resets():
+    data.CurriculumVitae(name="Test Doe")
+
+    assert curriculum_vitae.curriculum_vitae["name"] == "Test Doe"
+
+    data.create_a_sample_data_model("John Doe")
+
+    assert curriculum_vitae.curriculum_vitae["name"] == "John Doe"
 
 
 def test_dictionary_to_yaml():
@@ -730,8 +775,8 @@ def test_default_input_file_doesnt_have_local_catalog():
 @pytest.mark.parametrize(
     "key, expected_section_title",
     [
-        ("this_is_a_test", "This Is A Test"),
-        ("welcome_to_RenderCV!", "Welcome To RenderCV!"),
+        ("this_is_a_test", "This Is a Test"),
+        ("welcome_to_RenderCV!", "Welcome to RenderCV!"),
         ("\\faGraduationCap_education", "\\faGraduationCap Education"),
         ("Hello_World", "Hello World"),
         ("Hello World", "Hello World"),
@@ -744,3 +789,54 @@ def test_dictionary_key_to_proper_section_title(key, expected_section_title):
 
 
 # def test_if_available_themes_and_avaialble_theme_options_has_the_same_length():
+
+
+@pytest.mark.parametrize(
+    "url, expected_clean_url",
+    [
+        ("https://example.com", "example.com"),
+        ("https://example.com/", "example.com"),
+        ("https://example.com/test", "example.com/test"),
+        ("https://example.com/test/", "example.com/test"),
+        ("https://www.example.com/test/", "www.example.com/test"),
+    ],
+)
+def test_make_a_url_clean(url, expected_clean_url):
+    assert computers.make_a_url_clean(url) == expected_clean_url
+    assert (
+        data.PublicationEntry(title="Test", authors=["test"], url=url).clean_url
+        == expected_clean_url
+    )
+
+
+@pytest.mark.parametrize(
+    "path_name, expected_value",
+    [
+        ("NAME_IN_SNAKE_CASE", "John_Doe"),
+        ("NAME_IN_LOWER_SNAKE_CASE", "john_doe"),
+        ("NAME_IN_UPPER_SNAKE_CASE", "JOHN_DOE"),
+        ("NAME_IN_KEBAB_CASE", "John-Doe"),
+        ("NAME_IN_LOWER_KEBAB_CASE", "john-doe"),
+        ("NAME_IN_UPPER_KEBAB_CASE", "JOHN-DOE"),
+        ("NAME", "John Doe"),
+        ("FULL_MONTH_NAME", "January"),
+        ("MONTH_ABBREVIATION", "Jan"),
+        ("MONTH", "1"),
+        ("MONTH_IN_TWO_DIGITS", "01"),
+        ("YEAR", "2024"),
+        ("YEAR_IN_TWO_DIGITS", "24"),
+    ],
+)
+@time_machine.travel("2024-01-01")
+def test_render_command_settings_placeholders(path_name, expected_value):
+    data.CurriculumVitae(name="John Doe")
+
+    render_command_settings = data.RenderCommandSettings(
+        pdf_path=path_name,
+        latex_path=path_name,
+        html_path=path_name,
+        markdown_path=path_name,
+        output_folder_name=path_name,
+    )
+
+    assert render_command_settings.pdf_path.name == expected_value  # type: ignore

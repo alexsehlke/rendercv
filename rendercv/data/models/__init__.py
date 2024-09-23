@@ -16,6 +16,8 @@ modules, each containing a different group of data models.
     the CV.
 - `locale_catalog.py`: Contains the data model that is used to represent the locale
     catalog of the CV.
+- `rendercv_settings.py`: Contains the data model that is used to represent the settings
+    of the RenderCV.
 - `rendercv_data_model.py`: Contains the `RenderCVDataModel` data model, which is the
     main data model that defines the whole input file structure.
 """
@@ -36,10 +38,12 @@ from .entry_types import (
     NormalEntry,
     OneLineEntry,
     PublicationEntry,
+    available_entry_models,
     available_entry_type_names,
 )
 from .locale_catalog import LocaleCatalog
 from .rendercv_data_model import RenderCVDataModel
+from .rendercv_settings import RenderCommandSettings, RenderCVSettings
 
 __all__ = [
     "OneLineEntry",
@@ -59,4 +63,7 @@ __all__ = [
     "SectionContents",
     "available_themes",
     "available_entry_type_names",
+    "RenderCVSettings",
+    "RenderCommandSettings",
+    "available_entry_models",
 ]
